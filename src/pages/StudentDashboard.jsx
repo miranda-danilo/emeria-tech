@@ -1,122 +1,679 @@
-import React, { useState, useRef } from 'react';
-import { Cpu, ArrowLeft, CheckCircle2, BrainCircuit, Globe, GraduationCap, ChevronRight, PlayCircle, Lightbulb, Rocket, Award, Send, Zap, BookOpen, CheckSquare, BarChart, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Target, Trophy, LogOut, ChevronRight, Star, Shield, Zap, Lock, BookOpen, ArrowLeft, CheckCircle2, XCircle, PlayCircle, RotateCcw, Gamepad2, BrainCircuit } from 'lucide-react';
+import { db, appId } from '../firebase/config';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { arcadeGames } from '../data/silabo'; 
 
-import { silaboEmeria } from '../data/silabo';
-import ChatComponent from '../components/ChatComponent';
+// ============================================================================
+// SISTEMA DE EFECTOS DE SONIDO (Web Audio API)
+// ============================================================================
+const playSound = (type) => {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+
+  osc.connect(gainNode);
+  gainNode.connect(ctx.destination);
+
+  if (type === 'success') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, ctx.currentTime); 
+    osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1); 
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2); 
+    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } else if (type === 'error') {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+    gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } else if (type === 'click') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.1);
+  }
+};
 
 
 export default function StudentDashboard({ user, profile, onLogout, addExperience }) {
-  const [view, setView] = useState('unidades');
-  const [unidadActiva, setUnidadActiva] = useState(null);
-  const nivelActual = Math.floor(profile.totalScore / 100) + 1;
+  const [activeTab, setActiveTab] = useState('inicio');
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [silaboFirestore, setSilaboFirestore] = useState([]); 
+  const [expandedUnit, setExpandedUnit] = useState(null);
+  const [activeLesson, setActiveLesson] = useState(null);
+  const [activeGame, setActiveGame] = useState(null);
 
-  const getInsignia = () => {
-    if (nivelActual < 3) return { nombre: "Iniciado en TI", color: "bg-slate-200 text-slate-600" };
-    if (nivelActual < 7) return { nombre: "Explorador Digital", color: "bg-blue-100 text-blue-600" };
-    if (nivelActual < 15) return { nombre: "Especialista IA", color: "bg-purple-100 text-purple-600" };
-    return { nombre: "Maestro Arquitecto", color: "bg-amber-100 text-amber-600" };
+  const currentLevel = Math.floor((profile?.totalScore || 0) / 100) + 1;
+  const xpForNextLevel = currentLevel * 100;
+  const progressPercent = ((profile?.totalScore || 0) % 100) / 100 * 100;
+  const completedMissions = profile?.completedMissions || [];
+
+  useEffect(() => {
+    // Escuchar el ranking
+    const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'usuarios');
+    const qUsers = query(usersRef, orderBy('totalScore', 'desc'));
+    const unsubUsers = onSnapshot(qUsers, (snapshot) => {
+      const topUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(u => u.role === 'estudiante');
+      setLeaderboard(topUsers);
+    });
+
+    // Escuchar el Sílabo Dinámico desde Firestore
+    const silaboRef = collection(db, 'artifacts', appId, 'public', 'data', 'silabo');
+    const unsubSilabo = onSnapshot(silaboRef, (snapshot) => {
+      if (!snapshot.empty) {
+        const data = snapshot.docs.map(doc => doc.data());
+        data.sort((a, b) => a.id.localeCompare(b.id));
+        setSilaboFirestore(data);
+        if (data.length > 0 && !expandedUnit) {
+           setExpandedUnit(data[0].id);
+        }
+      }
+    });
+
+    return () => { unsubUsers(); unsubSilabo(); };
+  }, []);
+
+  const getTotalLessonsInUnit = (unit) => {
+    if (!unit.sessions) return 0;
+    return unit.sessions.reduce((total, session) => total + (session.lessons ? session.lessons.length : 0), 0);
   };
-  const insignia = getInsignia();
+
+  const getFlatLessons = () => {
+    let allLessons = [];
+    silaboFirestore.forEach(u => {
+      if(u.sessions) {
+         u.sessions.forEach(s => {
+           if(s.lessons) {
+             s.lessons.forEach(l => allLessons.push(l));
+           }
+         })
+      }
+    });
+    return allLessons;
+  };
+  
+  const flatLessonsList = getFlatLessons();
+
+  const handleLessonComplete = (xpGained, missionId) => {
+    playSound('success'); 
+    addExperience(xpGained, missionId);
+    setActiveLesson(null);
+    setActiveGame(null);
+  };
+
+  // VISTA INMERSIVA: LECCIÓN
+  if (activeLesson) {
+    const isAlreadyCompleted = completedMissions.includes(activeLesson.id);
+    return (
+      <LessonImmersiveView 
+        lesson={activeLesson} 
+        onBack={() => { playSound('click'); setActiveLesson(null); }} 
+        onComplete={(xp) => handleLessonComplete(xp, activeLesson.id)} 
+        isAlreadyCompleted={isAlreadyCompleted}
+      />
+    );
+  }
+
+  // VISTA INMERSIVA: JUEGO ARCADE
+  if (activeGame) {
+    const isAlreadyCompleted = completedMissions.includes(activeGame.id);
+    if (activeGame.type === 'memory') {
+      return (
+        <MemoryGameView 
+          game={activeGame} 
+          onBack={() => { playSound('click'); setActiveGame(null); }} 
+          onComplete={(xp) => handleLessonComplete(xp, activeGame.id)}
+          isAlreadyCompleted={isAlreadyCompleted}
+        />
+      );
+    }
+  }
 
   return (
-    <div className="flex h-screen bg-[#fafafa] font-sans text-slate-900 overflow-hidden">
-      <aside className="w-72 bg-[#050B14] text-white flex flex-col hidden lg:flex border-r border-slate-800 relative z-20">
-        <div className="p-8 border-b border-white/5 flex items-center gap-3">
-          <Cpu className="text-blue-500 w-8 h-8" />
-          <div><h1 className="font-black text-lg leading-none tracking-tight">EMERIA</h1><p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Tech System</p></div>
-        </div>
-        <div className="p-6">
-          <div className="bg-slate-900/80 p-5 rounded-2xl border border-white/10 shadow-inner">
-            <div className="flex justify-between items-center mb-2"><span className="text-[10px] font-black text-blue-400 uppercase tracking-wider">Nivel {nivelActual}</span><Zap className="w-4 h-4 text-amber-400 fill-amber-400" /></div>
-            <p className="text-3xl font-black text-white">{profile.totalScore} <span className="text-xs text-slate-500 font-normal">XP</span></p>
-            <div className="mt-3 h-1.5 bg-slate-800 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all" style={{ width: `${profile.totalScore % 100}%` }}></div></div>
-            <div className="mt-4 pt-4 border-t border-white/5"><div className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${insignia.color}`}>Rango: {insignia.nombre}</div></div>
+    <div className="min-h-screen bg-[#050B14] text-slate-300 flex overflow-hidden font-sans">
+      {/* SIDEBAR */}
+      <aside className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col justify-between hidden md:flex backdrop-blur-md">
+        <div>
+          <div className="p-6 border-b border-white/5 flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <Zap className="text-white w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-white leading-tight">EMERIA</h1>
+              <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Estudiante</p>
+            </div>
           </div>
+          
+          <nav className="p-4 space-y-2">
+            <SidebarBtn icon={<LayoutDashboard/>} label="Inicio" isActive={activeTab==='inicio'} onClick={()=>{playSound('click'); setActiveTab('inicio')}} />
+            <SidebarBtn icon={<Target/>} label="Misiones" isActive={activeTab==='misiones'} onClick={()=>{playSound('click'); setActiveTab('misiones')}} />
+            <SidebarBtn icon={<Gamepad2/>} label="Laboratorio" isActive={activeTab==='laboratorio'} onClick={()=>{playSound('click'); setActiveTab('laboratorio')}} />
+            <SidebarBtn icon={<Trophy/>} label="Ranking" isActive={activeTab==='ranking'} onClick={()=>{playSound('click'); setActiveTab('ranking')}} />
+          </nav>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          <button onClick={() => {setView('unidades'); setUnidadActiva(null);}} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl font-bold text-sm transition-all ${view === 'unidades' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><BookOpen className="w-5 h-5"/> Unidades</button>
-          <button onClick={() => setView('ejercicios')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl font-bold text-sm transition-all ${view === 'ejercicios' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Rocket className="w-5 h-5"/> Ejercicios Prácticos</button>
-          <button onClick={() => setView('evaluaciones')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl font-bold text-sm transition-all ${view === 'evaluaciones' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><CheckSquare className="w-5 h-5"/> Evaluaciones</button>
-          <button onClick={() => setView('progreso')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl font-bold text-sm transition-all ${view === 'progreso' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><BarChart className="w-5 h-5"/> Mi Progreso</button>
-          <button onClick={() => setView('chat')} className={`w-full flex items-center gap-3 px-5 py-3.5 rounded-xl font-bold text-sm transition-all ${view === 'chat' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><BrainCircuit className="w-5 h-5"/> Emeria AI Tutor</button>
-        </nav>
-        <div className="p-6 border-t border-white/5">
-          <div className="flex items-center gap-4 mb-4 bg-white/5 p-3 rounded-2xl">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-black text-white">{profile.name.charAt(0).toUpperCase()}</div>
-            <div className="flex-1 overflow-hidden"><p className="text-xs font-bold truncate text-white">{profile.name}</p><p className="text-[9px] text-blue-400 uppercase font-black">{profile.course || 'Estudiante TI'}</p></div>
-          </div>
-          <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-xl text-xs font-bold transition-colors"><LogOut className="w-4 h-4" /> Salir</button>
+        <div className="p-4 border-t border-white/5">
+           <div className="bg-slate-800/50 rounded-xl p-4 mb-4 border border-white/5">
+              <p className="text-white font-bold text-sm truncate">{profile?.name || 'Estudiante'}</p>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-blue-400 font-bold">Nivel {currentLevel}</span>
+                <span className="text-xs text-yellow-400 flex items-center gap-1"><Star className="w-3 h-3 fill-current"/> {profile?.totalScore || 0}</span>
+              </div>
+           </div>
+          <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-colors font-medium"><LogOut className="w-5 h-5" /> Cerrar Sesión</button>
         </div>
       </aside>
 
-      <main className="flex-1 p-6 lg:p-10 overflow-y-auto bg-slate-50">
-        {view === 'unidades' && !unidadActiva && (
-          <div className="space-y-8 animate-in fade-in max-w-6xl mx-auto">
-            <header className="mb-10"><h2 className="text-4xl font-black text-slate-900 tracking-tight">Ruta de Aprendizaje</h2><p className="text-slate-500 text-lg mt-2">Asignatura: Tecnologías Emergentes. Selecciona una unidad.</p></header>
-            <div className="grid md:grid-cols-2 gap-6">
-              {silaboEmeria.map(u => (
-                <div key={u.id} className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group cursor-pointer" onClick={() => setUnidadActiva(u)}>
-                  <div className="flex justify-between items-start mb-4"><span className="bg-blue-50 text-blue-600 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">UT {u.id}</span><span className="text-amber-500 font-bold text-sm flex items-center gap-1"><Zap className="w-4 h-4"/> {u.xpRecompensa} XP</span></div>
-                  <h3 className="text-xl font-black text-slate-800 mb-4 group-hover:text-blue-600">{u.titulo}</h3>
-                  <p className="text-slate-500 text-sm mb-6 flex items-center gap-2"><BookOpen className="w-4 h-4"/> {u.sesiones.length} Sesiones Académicas</p>
-                  <div className="w-full py-4 bg-slate-50 text-slate-600 group-hover:bg-blue-600 group-hover:text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors">Entrar a la Unidad <ChevronRight className="w-4 h-4" /></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto relative">
+        <header className="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 flex justify-between items-center sticky top-0 z-50">
+           <div className="flex items-center gap-2"><Zap className="text-blue-500 w-6 h-6" /><span className="text-white font-bold text-lg">EMERIA</span></div>
+           <button onClick={onLogout} className="text-slate-400 hover:text-white"><LogOut className="w-6 h-6"/></button>
+        </header>
 
-        {view === 'unidades' && unidadActiva && (
-          <div className="max-w-4xl mx-auto animate-in slide-in-from-right-8 duration-300">
-            <button onClick={() => setUnidadActiva(null)} className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold mb-6"><ArrowLeft className="w-5 h-5" /> Volver</button>
-            <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl mb-8">
-              <span className="text-blue-600 font-black text-xs uppercase block mb-2">Unidad Temática {unidadActiva.id}</span>
-              <h2 className="text-3xl font-black text-slate-900 mb-6">{unidadActiva.titulo}</h2>
-              <div className="space-y-6 mt-8">
-                {unidadActiva.sesiones.map((sesion, idx) => (
-                  <div key={idx} className="p-6 bg-slate-50 rounded-2xl border border-slate-100 relative overflow-hidden group">
-                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="font-bold text-lg text-slate-800">Sesión {sesion.num}</h4>
-                      <button onClick={() => addExperience(20)} className="bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 hover:border-emerald-200 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-sm"><CheckCircle2 className="w-4 h-4"/> Completada (+20 XP)</button>
-                    </div>
-                    <ul className="space-y-2">
-                      {sesion.temas.map((tema, i) => (<li key={i} className="flex items-start gap-3 text-sm text-slate-600"><span className="text-blue-500 mt-0.5">•</span><span>{tema}</span></li>))}
-                    </ul>
+        <div className="p-4 md:p-8 max-w-5xl mx-auto w-full relative z-10">
+          <div className="md:hidden grid grid-cols-4 bg-slate-900/50 p-1 rounded-xl mb-6 border border-white/5">
+             <MobileTabBtn label="Inicio" isActive={activeTab==='inicio'} onClick={()=>setActiveTab('inicio')} />
+             <MobileTabBtn label="Misiones" isActive={activeTab==='misiones'} onClick={()=>setActiveTab('misiones')} />
+             <MobileTabBtn label="Juegos" isActive={activeTab==='laboratorio'} onClick={()=>setActiveTab('laboratorio')} />
+             <MobileTabBtn label="Ranking" isActive={activeTab==='ranking'} onClick={()=>setActiveTab('ranking')} />
+          </div>
+
+          {/* CONTENIDO: INICIO */}
+          {activeTab === 'inicio' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="bg-gradient-to-br from-blue-900/40 to-slate-900/80 border border-blue-500/20 rounded-3xl p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+                <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                  <div className="w-32 h-32 bg-slate-800 rounded-full border-4 border-blue-500 flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)]">
+                    <span className="text-5xl font-black text-blue-500 opacity-50">{profile?.name ? profile.name.charAt(0).toUpperCase() : 'U'}</span>
                   </div>
-                ))}
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-3xl font-black text-white mb-2">{profile?.name || 'Estudiante Universitario'}</h2>
+                    <p className="text-slate-400 mb-6">{profile?.course || 'Curso no asignado'}</p>
+                    <div className="bg-slate-950 rounded-full h-4 w-full border border-white/5 overflow-hidden relative">
+                      <div className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-1000 relative" style={{ width: `${progressPercent}%` }}>
+                         <div className="absolute top-0 right-0 bottom-0 left-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8L3N2Zz4=')] opacity-30"></div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-xs font-bold mt-2">
+                      <span className="text-blue-400">NIVEL {currentLevel}</span>
+                      <span className="text-slate-400">{profile?.totalScore || 0} / {xpForNextLevel} XP</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard icon={<Star className="w-6 h-6 text-yellow-400" />} title="XP Total" value={profile?.totalScore || 0} />
+                <StatCard icon={<Shield className="w-6 h-6 text-blue-400" />} title="Nivel" value={currentLevel} />
+                <StatCard icon={<BookOpen className="w-6 h-6 text-green-400" />} title="Misiones" value={`${completedMissions.length}/${flatLessonsList.length}`} />
+                <StatCard icon={<Trophy className="w-6 h-6 text-purple-400" />} title="Rango" value={`#${leaderboard.findIndex(u => u.id === profile?.uid) + 1 || '-'}`} />
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {view === 'evaluaciones' && (
-          <div className="max-w-4xl mx-auto animate-in fade-in">
-            <header className="mb-10"><h2 className="text-4xl font-black text-slate-900">Evaluaciones Activas</h2></header>
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-200 text-center py-16">
-              <CheckSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-slate-700">No hay evaluaciones pendientes</h3>
-              <p className="text-slate-500 mt-2">Tu docente aún no ha publicado nuevos tests.</p>
+          {/* CONTENIDO: MISIONES (DINÁMICO DESDE FIRESTORE) */}
+          {activeTab === 'misiones' && (
+             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
+                  <Target className="text-blue-400 w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">Ruta de Aprendizaje</h2>
+                  <p className="text-slate-400 text-sm">Completa la teoría para desbloquear la práctica.</p>
+                </div>
+              </div>
+
+              {silaboFirestore.length === 0 ? (
+                <div className="text-center p-10 bg-slate-900/50 rounded-2xl border border-white/5">
+                  <Cpu className="w-10 h-10 text-slate-500 mx-auto mb-4 animate-pulse" />
+                  <p className="text-slate-400">Cargando misiones desde la base de datos...</p>
+                  <p className="text-xs text-slate-500 mt-2">Si este mensaje persiste, contacta al docente para que inicialice el sílabo.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {silaboFirestore.map((unidad, index) => (
+                    <div key={unidad.id || index} className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden">
+                      <button onClick={() => { playSound('click'); setExpandedUnit(expandedUnit === unidad.id ? null : unidad.id); }} className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${expandedUnit === unidad.id ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+                            {index + 1}
+                          </div>
+                          <div className="text-left max-w-[200px] sm:max-w-md md:max-w-lg lg:max-w-2xl">
+                            <h3 className="text-white font-bold truncate">{unidad.title}</h3>
+                            <p className="text-slate-500 text-xs mt-1">{getTotalLessonsInUnit(unidad)} misiones</p>
+                          </div>
+                        </div>
+                        <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform ${expandedUnit === unidad.id ? 'rotate-90 text-blue-400' : ''}`} />
+                      </button>
+                      
+                      {expandedUnit === unidad.id && unidad.sessions && (
+                        <div className="bg-slate-950/80 p-6 border-t border-white/5 space-y-6">
+                          <p className="text-sm text-slate-400 italic mb-4">{unidad.description}</p>
+                          
+                          {unidad.sessions.map((session, sIdx) => (
+                            <div key={session.id || sIdx} className="space-y-3">
+                              <h4 className="text-blue-400 font-bold text-sm tracking-wide uppercase border-b border-white/10 pb-2">{session.name}</h4>
+                              
+                              {session.lessons && session.lessons.map((lesson) => {
+                                const lessonIndex = flatLessonsList.findIndex(l => l.id === lesson.id);
+                                const isFirstLesson = lessonIndex === 0;
+                                const previousLesson = lessonIndex > 0 ? flatLessonsList[lessonIndex - 1] : null;
+                                const hasCompletedPrevious = previousLesson ? completedMissions.includes(previousLesson.id) : false;
+                                const isUnlocked = isFirstLesson || hasCompletedPrevious || lesson.isUnlocked;
+                                const isCompleted = completedMissions.includes(lesson.id);
+
+                                let cardStyle = "bg-slate-900/50 border-white/5 opacity-75";
+                                let iconStyle = "bg-slate-800 text-slate-600";
+                                let icon = <Lock className="w-4 h-4" />;
+                                
+                                if (isCompleted) {
+                                  cardStyle = "bg-slate-900/80 border-green-500/30";
+                                  iconStyle = "bg-green-500/20 text-green-400";
+                                  icon = <CheckCircle2 className="w-4 h-4" />;
+                                } else if (isUnlocked) {
+                                  cardStyle = "bg-slate-900 border-blue-500/30 hover:border-blue-400/50 shadow-[inset_0_0_20px_rgba(37,99,235,0.05)]";
+                                  iconStyle = "bg-blue-500/20 text-blue-400";
+                                  icon = <PlayCircle className="w-4 h-4" />;
+                                }
+
+                                return (
+                                  <div key={lesson.id} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl border transition-all gap-4 ${cardStyle}`}>
+                                    <div className="flex items-center gap-4">
+                                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${iconStyle}`}>{icon}</div>
+                                       <div>
+                                         <span className={`block text-sm font-medium ${isUnlocked || isCompleted ? 'text-slate-200' : 'text-slate-500'}`}>{lesson.title}</span>
+                                         <span className={`text-[10px] font-bold uppercase tracking-wider ${isCompleted ? 'text-green-500' : 'text-yellow-500'}`}>
+                                            {isCompleted ? 'Completado' : `+${lesson.xpReward || 0} XP`}
+                                         </span>
+                                       </div>
+                                    </div>
+                                    <button onClick={() => { playSound('click'); setActiveLesson(lesson); }} disabled={!isUnlocked && !isCompleted} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isCompleted ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : isUnlocked ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'}`}>
+                                      {isCompleted ? <span className="flex items-center gap-1"><RotateCcw className="w-4 h-4"/> Repasar</span> : isUnlocked ? 'Iniciar Misión' : 'Bloqueado'}
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+             </div>
+          )}
+
+          {/* CONTENIDO: LABORATORIO / ARCADE */}
+          {activeTab === 'laboratorio' && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-pink-500/10 rounded-2xl flex items-center justify-center border border-pink-500/20">
+                  <Gamepad2 className="text-pink-400 w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">Laboratorio Arcade</h2>
+                  <p className="text-slate-400 text-sm">Entrena tus habilidades y gana experiencia extra.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {arcadeGames.map((game) => {
+                  const isCompleted = completedMissions.includes(game.id);
+                  const hasRequiredLesson = completedMissions.includes(game.requiredLessonId);
+                  const isUnlocked = hasRequiredLesson || isCompleted;
+
+                  return (
+                    <div key={game.id} className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 flex flex-col relative overflow-hidden group">
+                      {!isUnlocked && (
+                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
+                           <Lock className="w-10 h-10 text-slate-600 mb-3" />
+                           <p className="text-white font-bold mb-1">Juego Bloqueado</p>
+                           <p className="text-xs text-slate-400">Debes completar la misión:<br/> <span className="text-blue-400 font-bold">{game.requiredLessonName}</span></p>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-pink-500/50 transition-colors">
+                          <BrainCircuit className="w-6 h-6 text-pink-400" />
+                        </div>
+                        <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isCompleted ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
+                           {isCompleted ? <CheckCircle2 className="w-3 h-3"/> : <Star className="w-3 h-3 fill-current"/>}
+                           {isCompleted ? 'Completado' : `+${game.xpReward} XP`}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-white mb-2">{game.title}</h3>
+                      <p className="text-slate-400 text-sm mb-6 flex-1">{game.description}</p>
+                      
+                      <button onClick={() => { playSound('click'); setActiveGame(game); }} disabled={!isUnlocked} className={`w-full py-3 rounded-xl font-bold transition-all ${isCompleted ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-pink-600 text-white hover:bg-pink-500 shadow-lg shadow-pink-600/20'}`}>
+                        {isCompleted ? 'Jugar de Nuevo' : 'Jugar Ahora'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {view === 'ejercicios' && (
-          <div className="max-w-4xl mx-auto text-center py-20 animate-in fade-in">
-            <Rocket className="w-20 h-20 text-slate-200 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold text-slate-800">Entorno Práctico en Construcción</h2>
-            <p className="text-slate-500 mt-2">Pronto podrás acceder a laboratorios en la nube.</p>
-          </div>
-        )}
+          {/* CONTENIDO: RANKING */}
+          {activeTab === 'ranking' && (
+             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+               <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
+                  <Trophy className="text-purple-400 w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">Salón de la Fama</h2>
+                  <p className="text-slate-400 text-sm">Compite con tus compañeros de curso.</p>
+                </div>
+              </div>
+              <div className="bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden">
+                <div className="p-6 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="col-span-2 text-center">Rango</div>
+                  <div className="col-span-7">Estudiante</div>
+                  <div className="col-span-3 text-right">XP</div>
+                </div>
+                <div className="divide-y divide-white/5">
+                  {leaderboard.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500">Sin datos.</div>
+                  ) : (
+                    leaderboard.map((userDoc, index) => {
+                      const isMe = userDoc.id === profile?.uid;
+                      let rankClass = "text-slate-400 font-bold text-lg";
+                      if (index === 0) rankClass = "text-yellow-400 font-black text-2xl drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]";
+                      if (index === 1) rankClass = "text-slate-300 font-black text-xl";
+                      if (index === 2) rankClass = "text-amber-600 font-black text-lg";
 
-        {view === 'progreso' && (
-          <div className="max-w-4xl mx-auto text-center py-20 animate-in fade-in bg-white rounded-3xl border border-slate-200">
-             <h2 className="text-3xl font-bold text-slate-800">Tu Progreso General: {profile.totalScore} XP</h2>
-          </div>
-        )}
+                      return (
+                        <div key={userDoc.id} className={`p-4 grid grid-cols-12 gap-4 items-center transition-colors ${isMe ? 'bg-blue-900/20 border-l-4 border-blue-500' : 'hover:bg-white/5 border-l-4 border-transparent'}`}>
+                          <div className={`col-span-2 text-center ${rankClass}`}>#{index + 1}</div>
+                          <div className="col-span-7 flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
+                               {userDoc.name ? userDoc.name.charAt(0).toUpperCase() : '?'}
+                            </div>
+                            <div>
+                              <p className={`font-bold ${isMe ? 'text-blue-400' : 'text-slate-200'}`}>{userDoc.name || 'Anónimo'} {isMe && '(Tú)'}</p>
+                              <p className="text-xs text-slate-500">{userDoc.course || 'Estudiante'}</p>
+                            </div>
+                          </div>
+                          <div className="col-span-3 text-right font-mono font-bold text-yellow-400">{userDoc.totalScore || 0} XP</div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+             </div>
+          )}
 
-        {view === 'chat' && <ChatComponent />}
+        </div>
       </main>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// SUBCOMPONENTES DE UI
+// ----------------------------------------------------------------------
+function SidebarBtn({ icon, label, isActive, onClick }) {
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}>
+      <span className="w-5 h-5">{icon}</span> {label}
+    </button>
+  );
+}
+
+function MobileTabBtn({ label, isActive, onClick }) {
+  return (
+    <button onClick={onClick} className={`flex-1 py-2 text-xs font-bold rounded-lg truncate px-1 ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>{label}</button>
+  );
+}
+
+function StatCard({ icon, title, value }) { return ( <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-white/10 transition-colors"><div className="mb-2">{icon}</div><p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">{title}</p><p className="text-xl font-black text-white">{value}</p></div> ); }
+
+// ----------------------------------------------------------------------
+// VISTA INMERSIVA: LECCIÓN TEÓRICA Y QUIZ
+// ----------------------------------------------------------------------
+function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted }) {
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswerChecked, setIsAnswerChecked] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const hasContent = lesson.content && lesson.content.length > 0;
+  const hasQuiz = lesson.quiz && lesson.quiz.length > 0;
+  
+  if (!hasContent && !hasQuiz) {
+    return (
+      <div className="min-h-screen bg-[#050B14] flex flex-col items-center justify-center p-6 text-center">
+        <Target className="w-16 h-16 text-blue-500 mb-4 animate-bounce" />
+        <h2 className="text-2xl font-bold text-white mb-2">Misión: {lesson.title}</h2>
+        {isAlreadyCompleted ? <p className="text-green-400 mb-8 max-w-md font-bold">Ya completaste esta tarea. ¡Buen trabajo!</p> : <p className="text-slate-400 mb-8 max-w-md">Lee el documento adjunto o completa la tarea asignada para continuar.</p>}
+        <div className="flex gap-4">
+          <button onClick={onBack} className="px-6 py-3 rounded-xl font-bold text-slate-300 bg-slate-800 hover:bg-slate-700">Volver</button>
+          {!isAlreadyCompleted && (
+            <button onClick={() => { playSound('success'); onComplete(lesson.xpReward); }} className="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500">Completar (+{lesson.xpReward} XP)</button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const currentQuestion = hasQuiz ? lesson.quiz[currentQuizIndex] : null;
+
+  const handleCheckAnswer = () => {
+    if (selectedOption === null) return;
+    setIsAnswerChecked(true);
+    if (selectedOption === currentQuestion.correctAnswer) {
+       playSound('success');
+       setQuizScore(prev => prev + 1);
+    } else {
+       playSound('error');
+    }
+  };
+
+  const handleNextQuestion = () => {
+    playSound('click');
+    if (currentQuizIndex < lesson.quiz.length - 1) {
+      setCurrentQuizIndex(prev => prev + 1); setSelectedOption(null); setIsAnswerChecked(false);
+    } else setIsFinished(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050B14] text-slate-300 flex flex-col font-sans relative">
+      <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></button>
+          <div className="hidden sm:block">
+            <p className="text-xs text-blue-400 font-bold uppercase tracking-wider">{isAlreadyCompleted ? 'Modo Repaso' : 'Misión en curso'}</p>
+            <h2 className="text-white font-bold truncate max-w-sm">{lesson.title}</h2>
+          </div>
+        </div>
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isAlreadyCompleted ? 'bg-green-500/10 border-green-500/20' : 'bg-yellow-500/10 border-yellow-500/20'}`}>
+          {isAlreadyCompleted ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Star className="w-4 h-4 text-yellow-400 fill-current" />}
+          <span className={`text-sm font-bold ${isAlreadyCompleted ? 'text-green-400' : 'text-yellow-400'}`}>{isAlreadyCompleted ? 'Completada' : `Recompensa: ${lesson.xpReward || 0} XP`}</span>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="max-w-3xl mx-auto space-y-12 pb-24">
+          
+          {hasContent && !isFinished && (
+            <div className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 md:p-10 shadow-2xl space-y-6">
+               {lesson.content.map((block, idx) => {
+                 if (block.type === 'subtitle') return <h3 key={idx} className="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mt-8">{block.value}</h3>;
+                 if (block.type === 'text') return <p key={idx} className="text-slate-300 leading-relaxed text-lg">{block.value}</p>;
+                 if (block.type === 'list') return <ul key={idx} className="space-y-3 bg-slate-950/50 p-6 rounded-xl border border-white/5">{block.items.map((item, i) => (<li key={i} className="flex gap-3 text-slate-300 leading-relaxed"><CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" /><span>{item}</span></li>))}</ul>;
+                 if (block.type === 'image') return <div key={idx} className="w-full bg-slate-800 rounded-xl overflow-hidden border border-white/10 relative group"><div className="w-full h-64 bg-slate-900 flex flex-col items-center justify-center p-4 text-center border-b border-white/5"><Target className="w-12 h-12 text-blue-500/50 mb-3" /><p className="text-sm text-slate-500 font-mono italic">{block.url}</p></div><p className="p-3 text-center text-xs text-slate-400 bg-slate-950">{block.alt}</p></div>;
+                 return null;
+               })}
+            </div>
+          )}
+
+          {hasQuiz && !isFinished && (
+            <div className="bg-gradient-to-b from-blue-900/20 to-slate-900/50 border border-blue-500/30 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+               <div className="flex items-center gap-3 mb-6"><Zap className="w-6 h-6 text-yellow-400" /><h3 className="text-xl font-black text-white uppercase tracking-wider">Reto de Conocimiento</h3></div>
+               <div className="mb-8">
+                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-bold"><span>Pregunta {currentQuizIndex + 1} de {lesson.quiz.length}</span></div>
+                 <div className="w-full bg-slate-950 rounded-full h-2"><div className="bg-blue-500 h-2 rounded-full transition-all" style={{width: `${((currentQuizIndex + 1) / lesson.quiz.length) * 100}%`}}></div></div>
+               </div>
+               <p className="text-xl md:text-2xl text-white font-medium mb-8 leading-tight">{currentQuestion.question}</p>
+               <div className="space-y-3">
+                 {currentQuestion.options.map((option, idx) => {
+                   let cardClass = "bg-slate-800/50 border-white/10 hover:border-blue-500/50 text-slate-300";
+                   if (isAnswerChecked) {
+                     if (idx === currentQuestion.correctAnswer) cardClass = "bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_15px_rgba(34,197,94,0.2)]"; 
+                     else if (idx === selectedOption) cardClass = "bg-red-500/20 border-red-500 text-red-300"; 
+                     else cardClass = "bg-slate-900/30 border-white/5 text-slate-500 opacity-50"; 
+                   } else if (selectedOption === idx) cardClass = "bg-blue-600 border-blue-400 text-white shadow-lg"; 
+                   
+                   return (
+                     <button key={idx} disabled={isAnswerChecked} onClick={() => { playSound('click'); setSelectedOption(idx); }} className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium flex justify-between items-center ${cardClass}`}>
+                       <span>{option}</span>
+                       {isAnswerChecked && idx === currentQuestion.correctAnswer && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                       {isAnswerChecked && selectedOption === idx && idx !== currentQuestion.correctAnswer && <XCircle className="w-5 h-5 text-red-400" />}
+                     </button>
+                   );
+                 })}
+               </div>
+               <div className="mt-8 flex justify-end">
+                 {!isAnswerChecked ? <button onClick={handleCheckAnswer} disabled={selectedOption === null} className={`px-8 py-3 rounded-xl font-bold transition-all ${selectedOption !== null ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>Verificar</button> : <button onClick={handleNextQuestion} className="px-8 py-3 rounded-xl font-bold bg-white text-slate-900 hover:bg-slate-200 transition-all flex items-center gap-2">{currentQuizIndex < lesson.quiz.length - 1 ? 'Siguiente' : 'Finalizar Reto'} <ChevronRight className="w-5 h-5" /></button>}
+               </div>
+            </div>
+          )}
+
+          {isFinished && (
+            <div className="bg-slate-900/80 border border-blue-500/30 rounded-3xl p-10 shadow-[0_0_50px_rgba(37,99,235,0.1)] text-center max-w-lg mx-auto animate-in zoom-in duration-500">
+               <Trophy className={`w-24 h-24 mx-auto mb-6 ${isAlreadyCompleted ? 'text-slate-500' : 'text-yellow-400'}`} />
+               <h2 className="text-3xl font-black text-white mb-2">{isAlreadyCompleted ? 'Repaso Completado' : '¡Misión Superada!'}</h2>
+               <p className="text-slate-400 mb-8">Acertaste {quizScore} de {lesson.quiz.length} preguntas.</p>
+               {!isAlreadyCompleted && (
+                 <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
+                    <p className="text-xs text-slate-500 font-bold uppercase mb-1">Recompensa Ganada</p>
+                    <p className="text-4xl font-black text-yellow-400">+{lesson.xpReward || 0} <span className="text-xl">XP</span></p>
+                 </div>
+               )}
+               <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(lesson.xpReward || 0); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2 text-lg">
+                 {isAlreadyCompleted ? 'Volver al Mapa' : 'Reclamar Recompensa'} <Star className="w-5 h-5 fill-current" />
+               </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// VISTA INMERSIVA: MINIJUEGO DE MEMORIA (ARCADE)
+// ----------------------------------------------------------------------
+function MemoryGameView({ game, onBack, onComplete, isAlreadyCompleted }) {
+  const [cards, setCards] = useState([]);
+  const [flippedIds, setFlippedIds] = useState([]);
+  const [matchedIds, setMatchedIds] = useState([]);
+  const [moves, setMoves] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+
+  useEffect(() => {
+    const shuffled = [...game.data].sort(() => Math.random() - 0.5);
+    setCards(shuffled);
+  }, [game.data]);
+
+  const handleCardClick = (card) => {
+    if (flippedIds.length === 2 || flippedIds.includes(card.id) || matchedIds.includes(card.id)) return;
+    
+    playSound('click');
+    const newFlipped = [...flippedIds, card.id];
+    setFlippedIds(newFlipped);
+
+    if (newFlipped.length === 2) {
+      setMoves(m => m + 1);
+      const firstCard = cards.find(c => c.id === newFlipped[0]);
+      const secondCard = cards.find(c => c.id === newFlipped[1]);
+
+      if (firstCard.matchId === secondCard.id) {
+        playSound('success');
+        const newMatched = [...matchedIds, firstCard.id, secondCard.id];
+        setMatchedIds(newMatched);
+        setFlippedIds([]);
+        if (newMatched.length === cards.length) {
+           setTimeout(() => setIsFinished(true), 500);
+        }
+      } else {
+        playSound('error');
+        setTimeout(() => setFlippedIds([]), 1000);
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050B14] text-slate-300 flex flex-col font-sans relative">
+      <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></button>
+          <div>
+            <p className="text-xs text-pink-400 font-bold uppercase tracking-wider">Laboratorio Arcade</p>
+            <h2 className="text-white font-bold">{game.title}</h2>
+          </div>
+        </div>
+        <div className="text-sm font-bold text-slate-400 bg-slate-900 px-4 py-2 rounded-xl border border-white/5">
+          Movimientos: <span className="text-white">{moves}</span>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center justify-center">
+        {!isFinished ? (
+          <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4">
+            {cards.map(card => {
+              const isFlipped = flippedIds.includes(card.id) || matchedIds.includes(card.id);
+              const isMatched = matchedIds.includes(card.id);
+              
+              return (
+                <div 
+                  key={card.id} 
+                  onClick={() => handleCardClick(card)}
+                  className={`relative aspect-[4/3] rounded-2xl cursor-pointer perspective-1000 transition-all duration-300 ${isMatched ? 'opacity-50 scale-95' : 'hover:scale-105'}`}
+                >
+                  <div className={`w-full h-full absolute inset-0 preserve-3d transition-transform duration-500 ${isFlipped ? 'rotate-y-180' : ''}`}>
+                    <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-pink-600 to-purple-800 rounded-2xl border-2 border-pink-400/30 flex items-center justify-center shadow-lg"><BrainCircuit className="w-12 h-12 text-white/50" /></div>
+                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-slate-800 rounded-2xl border-2 border-blue-500 flex items-center justify-center p-4 text-center shadow-[0_0_15px_rgba(37,99,235,0.3)]"><p className="text-sm font-bold text-white leading-tight">{card.text}</p></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-slate-900/80 border border-pink-500/30 rounded-3xl p-10 text-center max-w-lg animate-in zoom-in duration-500">
+             <Gamepad2 className="w-24 h-24 text-pink-400 mx-auto mb-6" />
+             <h2 className="text-3xl font-black text-white mb-2">¡Nivel Completado!</h2>
+             <p className="text-slate-400 mb-8">Resolviste el puzzle en {moves} movimientos.</p>
+             {!isAlreadyCompleted ? (
+               <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
+                  <p className="text-xs text-slate-500 font-bold uppercase mb-1">XP Extra Ganado</p>
+                  <p className="text-4xl font-black text-pink-400">+{game.xpReward} <span className="text-xl">XP</span></p>
+               </div>
+             ) : <p className="text-green-400 mb-8 font-bold">Modo práctica: Ya habías reclamado esta recompensa.</p>}
+             <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(game.xpReward); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 transition-all shadow-[0_0_30px_rgba(219,39,119,0.5)]">
+               {isAlreadyCompleted ? 'Volver al Laboratorio' : 'Reclamar XP Extra'}
+             </button>
+          </div>
+        )}
+      </div>
+      <style dangerouslySetInnerHTML={{__html: `.perspective-1000 { perspective: 1000px; } .preserve-3d { transform-style: preserve-3d; } .backface-hidden { backface-visibility: hidden; } .rotate-y-180 { transform: rotateY(180deg); }`}} />
     </div>
   );
 }

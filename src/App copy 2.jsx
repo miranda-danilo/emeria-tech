@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cpu } from 'lucide-react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, updateDoc, increment, setDoc, arrayUnion } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, setDoc } from 'firebase/firestore';
 
 import { auth, db, appId, isConfigured } from './firebase/config';
 import LandingPage from './pages/LandingPage';
@@ -20,6 +20,8 @@ export default function App() {
     
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
+        // Validación para evitar el cambio brusco de pantalla:
+        // Si el usuario no ha verificado su correo, detenemos el flujo aquí.
         if (!currentUser.emailVerified) {
           setLoadingAuth(false);
           return;
@@ -35,16 +37,12 @@ export default function App() {
               name: currentUser.displayName || 'Estudiante', 
               email: currentUser.email, 
               role: 'estudiante', 
-              totalScore: 0,
-              completedMissions: [] // NUEVO: Arreglo para rastrear progreso
+              totalScore: 0 
             };
             await setDoc(userRef, newP); 
             setProfile(newP);
           } else { 
-            const data = snap.data();
-            // Asegurar que completedMissions exista (por si hay usuarios viejos)
-            if (!data.completedMissions) data.completedMissions = [];
-            setProfile(data); 
+            setProfile(snap.data()); 
           }
           setCurrentScreen('dashboard');
         } catch (error) { 
@@ -61,34 +59,11 @@ export default function App() {
     return () => unsubscribe();
   }, [currentScreen]);
 
-  // NUEVO: Función mejorada para registrar progreso y evitar doble farmeo
-  const addExperience = async (points, lessonId) => {
-    if (!isConfigured || !user || !profile) return;
-    
-    // Verificación crucial: ¿Ya completó esta misión?
-    if (profile.completedMissions.includes(lessonId)) {
-      console.log("Misión ya completada. No se otorgan XP adicionales.");
-      return; 
-    }
-
+  const addExperience = async (points) => {
+    if (!isConfigured || !user) return;
     const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'usuarios', user.uid);
-    
-    try {
-      // Actualizamos Firestore: Sumamos XP y agregamos el lessonId al arreglo
-      await updateDoc(userRef, { 
-        totalScore: increment(points),
-        completedMissions: arrayUnion(lessonId)
-      });
-      
-      // Actualizamos el estado local para que la UI reaccione instantáneamente
-      setProfile(p => ({ 
-        ...p, 
-        totalScore: p.totalScore + points,
-        completedMissions: [...p.completedMissions, lessonId]
-      }));
-    } catch (error) {
-      console.error("Error guardando progreso:", error);
-    }
+    await updateDoc(userRef, { totalScore: increment(points) });
+    setProfile(p => ({ ...p, totalScore: p.totalScore + points }));
   };
 
   const handleLogout = () => { 
