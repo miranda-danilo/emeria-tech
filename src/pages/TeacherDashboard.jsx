@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, BookOpen, Edit3, Save, Users, LayoutDashboard, BarChart3, Upload, FileText, CheckCircle, Cpu, Zap, Search, Plus, Trash2, ArrowLeft, Image as ImageIcon, List, Type, MessageSquare, AlertTriangle, Star, Target } from 'lucide-react';
+import { LogOut, BookOpen, Edit3, Save, Users, LayoutDashboard, BarChart3, Upload, FileText, CheckCircle, Cpu, Zap, Search, Plus, Trash2, ArrowLeft, List, Type, MessageSquare, AlertTriangle, Star, Target } from 'lucide-react';
 import { db, appId } from '../firebase/config';
 import { collection, query, onSnapshot, doc, updateDoc, setDoc, orderBy } from 'firebase/firestore';
 import { silabo as silaboInicial } from '../data/silabo'; 
@@ -168,13 +168,12 @@ export default function TeacherDashboard({ profile, onLogout }) {
                    <p className="text-sm text-slate-400 mt-1">Configura el contenido y administra los recursos de cada lección.</p>
                  </div>
                  
-                 {/* BOTÓN CRÍTICO PARA SOBREESCRIBIR LA BASE DE DATOS */}
                  <div className="flex gap-2 w-full sm:w-auto">
                     {silaboData.length === 0 ? (
                       <button onClick={initializeSilaboInFirestore} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold w-full sm:w-auto">Cargar Sílabo Base</button>
                     ) : (
                       <button onClick={() => {
-                        if(window.confirm('¿Deseas FORZAR el reinicio de la base de datos? Esto borrará la estructura actual (y las tareas administrativas viejas) y cargará la nueva versión 1.1 limpia.')) {
+                        if(window.confirm('¿Deseas FORZAR el reinicio de la base de datos? Esto borrará la estructura actual y cargará la versión base.')) {
                           initializeSilaboInFirestore();
                         }
                       }} className="px-4 py-2 bg-red-600/10 hover:bg-red-600/30 text-red-400 border border-red-500/30 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
@@ -452,7 +451,7 @@ function LessonContentEditor({ lesson, onSave, onCancel }) {
   const addContentBlock = (type) => {
     const newBlock = { type, value: '' };
     if (type === 'list') newBlock.items = ['Nuevo elemento'];
-    if (type === 'image') { newBlock.url = ''; newBlock.alt = ''; }
+    if (type === 'youtube') newBlock.url = '';
     setLocalLesson(prev => ({ ...prev, content: [...prev.content, newBlock] }));
   };
 
@@ -524,7 +523,7 @@ function LessonContentEditor({ lesson, onSave, onCancel }) {
               
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-bold text-slate-500 uppercase bg-slate-800 px-2 py-1 rounded">
-                  {block.type === 'subtitle' ? 'Subtítulo' : block.type === 'text' ? 'Párrafo' : block.type === 'list' ? 'Lista' : 'Imagen'}
+                  {block.type === 'subtitle' ? 'Subtítulo' : block.type === 'text' ? 'Párrafo' : block.type === 'list' ? 'Lista' : 'Video YouTube'}
                 </span>
               </div>
 
@@ -549,10 +548,19 @@ function LessonContentEditor({ lesson, onSave, onCancel }) {
                 </div>
               )}
 
-              {block.type === 'image' && (
+              {block.type === 'youtube' && (
                 <div className="space-y-3">
-                  <input type="text" value={block.url} onChange={(e) => updateContentBlock(idx, 'url', e.target.value)} className="w-full bg-slate-950 border border-white/10 rounded-lg p-2 text-white text-sm outline-none" placeholder="Texto descriptivo o URL de la imagen..."/>
-                  <input type="text" value={block.alt} onChange={(e) => updateContentBlock(idx, 'alt', e.target.value)} className="w-full bg-slate-950 border border-white/10 rounded-lg p-2 text-white text-sm outline-none" placeholder="Texto alternativo (Alt) para accesibilidad..."/>
+                  <p className="text-xs text-slate-400">Pega el enlace directo de YouTube (Ej: https://www.youtube.com/watch?v=kYJmI9I2d0k)</p>
+                  <div className="relative">
+                    <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
+                    <input 
+                      type="text" 
+                      value={block.url} 
+                      onChange={(e) => updateContentBlock(idx, 'url', e.target.value)} 
+                      className="w-full bg-slate-950 border border-white/10 rounded-lg py-3 pl-10 pr-3 text-white text-sm outline-none focus:border-red-500" 
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -563,7 +571,7 @@ function LessonContentEditor({ lesson, onSave, onCancel }) {
           <button onClick={() => addContentBlock('subtitle')} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold border border-white/5 flex items-center gap-1"><Type className="w-3 h-3"/> Añadir Subtítulo</button>
           <button onClick={() => addContentBlock('text')} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold border border-white/5 flex items-center gap-1"><FileText className="w-3 h-3"/> Añadir Párrafo</button>
           <button onClick={() => addContentBlock('list')} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold border border-white/5 flex items-center gap-1"><List className="w-3 h-3"/> Añadir Lista</button>
-          <button onClick={() => addContentBlock('image')} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold border border-white/5 flex items-center gap-1"><ImageIcon className="w-3 h-3"/> Añadir Imagen</button>
+          <button onClick={() => addContentBlock('youtube')} className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg text-xs font-bold border border-red-500/30 flex items-center gap-1"><Youtube className="w-3 h-3"/> Añadir Video YouTube</button>
         </div>
       </div>
 

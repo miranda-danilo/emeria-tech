@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Cpu, BrainCircuit, Globe, GraduationCap, ChevronRight, PlayCircle, Lightbulb, Rocket, Award, Send } from 'lucide-react';
-import videoPromo from '../assets/video.mp4';
+import videoPromo from '../assets/video_promo.mp4';
 
 
 export default function LandingPage({ onNavigateToAuth }) {
@@ -62,7 +62,7 @@ export default function LandingPage({ onNavigateToAuth }) {
             </span>
           </h1>
           <p className="text-lg lg:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Plataforma interactiva diseñada para estudiantes de 8vo semestre de la carrera de Tecnologías de la Información. Desarrolla tus competencias digitales a través del juego y la IA.
+            Aplicación de gamificación interactiva diseñada para estudiantes de 8vo semestre de la carrera de Tecnologías de la Información. Desarrolla tus competencias digitales a través de la gamificación.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={onNavigateToAuth} className="w-full sm:w-auto px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-2xl flex items-center justify-center gap-3 transition-all transform hover:scale-105 shadow-[0_0_30px_rgba(37,99,235,0.4)]">
@@ -85,7 +85,7 @@ export default function LandingPage({ onNavigateToAuth }) {
               className="w-full h-auto aspect-video object-cover opacity-90 group-hover:opacity-100 transition-opacity"
               poster="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop"
             >
-              <source src="../assets/video.mp4" type="video/mp4" />
+              <source src="src/assets/video_promo.mp4" type="video/mp4" />
               Tu navegador no soporta videos HTML5.
             </video>
             

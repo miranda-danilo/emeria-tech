@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Target, Trophy, LogOut, ChevronRight, Star, Shield, Zap, Lock, BookOpen, ArrowLeft, CheckCircle2, XCircle, PlayCircle, RotateCcw, Gamepad2, BrainCircuit } from 'lucide-react';
+import { LayoutDashboard, Target, Trophy, LogOut, ChevronRight, Star, Shield, Zap, Lock, BookOpen, ArrowLeft, CheckCircle2, XCircle, PlayCircle, RotateCcw, Gamepad2, BrainCircuit, AlertOctagon } from 'lucide-react';
 import { db, appId } from '../firebase/config';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { arcadeGames } from '../data/silabo'; 
@@ -44,6 +44,14 @@ const playSound = (type) => {
   }
 };
 
+// Extractor de ID de YouTube
+const getYouTubeId = (url) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+};
+
 
 export default function StudentDashboard({ user, profile, onLogout, addExperience }) {
   const [activeTab, setActiveTab] = useState('inicio');
@@ -59,7 +67,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
   const completedMissions = profile?.completedMissions || [];
 
   useEffect(() => {
-    // Escuchar el ranking
     const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'usuarios');
     const qUsers = query(usersRef, orderBy('totalScore', 'desc'));
     const unsubUsers = onSnapshot(qUsers, (snapshot) => {
@@ -67,7 +74,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
       setLeaderboard(topUsers);
     });
 
-    // Escuchar el Sílabo Dinámico desde Firestore
     const silaboRef = collection(db, 'artifacts', appId, 'public', 'data', 'silabo');
     const unsubSilabo = onSnapshot(silaboRef, (snapshot) => {
       if (!snapshot.empty) {
@@ -111,7 +117,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
     setActiveGame(null);
   };
 
-  // VISTA INMERSIVA: LECCIÓN
   if (activeLesson) {
     const isAlreadyCompleted = completedMissions.includes(activeLesson.id);
     return (
@@ -124,7 +129,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
     );
   }
 
-  // VISTA INMERSIVA: JUEGO ARCADE
   if (activeGame) {
     const isAlreadyCompleted = completedMissions.includes(activeGame.id);
     if (activeGame.type === 'memory') {
@@ -221,7 +225,7 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
             </div>
           )}
 
-          {/* CONTENIDO: MISIONES (DINÁMICO DESDE FIRESTORE) */}
+          {/* CONTENIDO: MISIONES */}
           {activeTab === 'misiones' && (
              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="flex items-center gap-3 mb-8">
@@ -444,7 +448,7 @@ function MobileTabBtn({ label, isActive, onClick }) {
 function StatCard({ icon, title, value }) { return ( <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-white/10 transition-colors"><div className="mb-2">{icon}</div><p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">{title}</p><p className="text-xl font-black text-white">{value}</p></div> ); }
 
 // ----------------------------------------------------------------------
-// VISTA INMERSIVA: LECCIÓN TEÓRICA Y QUIZ
+// VISTA INMERSIVA: LECCIÓN TEÓRICA Y QUIZ 
 // ----------------------------------------------------------------------
 function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted }) {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -492,6 +496,19 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
     } else setIsFinished(true);
   };
 
+  const handleRetryQuiz = () => {
+    playSound('click');
+    setCurrentQuizIndex(0);
+    setQuizScore(0);
+    setSelectedOption(null);
+    setIsAnswerChecked(false);
+    setIsFinished(false);
+  };
+
+  // NUEVA LÓGICA: Exigir 100% de aciertos para ganar XP
+  const perfectScore = hasQuiz ? (quizScore === lesson.quiz.length) : true;
+  const passed = isAlreadyCompleted || perfectScore;
+
   return (
     <div className="min-h-screen bg-[#050B14] text-slate-300 flex flex-col font-sans relative">
       <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 flex items-center justify-between">
@@ -517,7 +534,31 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
                  if (block.type === 'subtitle') return <h3 key={idx} className="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mt-8">{block.value}</h3>;
                  if (block.type === 'text') return <p key={idx} className="text-slate-300 leading-relaxed text-lg">{block.value}</p>;
                  if (block.type === 'list') return <ul key={idx} className="space-y-3 bg-slate-950/50 p-6 rounded-xl border border-white/5">{block.items.map((item, i) => (<li key={i} className="flex gap-3 text-slate-300 leading-relaxed"><CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" /><span>{item}</span></li>))}</ul>;
-                 if (block.type === 'image') return <div key={idx} className="w-full bg-slate-800 rounded-xl overflow-hidden border border-white/10 relative group"><div className="w-full h-64 bg-slate-900 flex flex-col items-center justify-center p-4 text-center border-b border-white/5"><Target className="w-12 h-12 text-blue-500/50 mb-3" /><p className="text-sm text-slate-500 font-mono italic">{block.url}</p></div><p className="p-3 text-center text-xs text-slate-400 bg-slate-950">{block.alt}</p></div>;
+                 
+                 if (block.type === 'youtube') {
+                   const videoId = getYouTubeId(block.url);
+                   return (
+                     <div key={idx} className="w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-white/10 relative shadow-lg my-6 group">
+                        {videoId ? (
+                          <iframe
+                            className="w-full h-full absolute top-0 left-0"
+                            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                            title="YouTube video player"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-4 text-center">
+                            <Youtube className="w-12 h-12 mb-3 opacity-30 text-red-500" />
+                            <p className="text-sm font-medium">Video no disponible</p>
+                            <p className="text-xs mt-1">El enlace de YouTube proporcionado no es válido.</p>
+                          </div>
+                        )}
+                     </div>
+                   );
+                 }
+                 
                  return null;
                })}
             </div>
@@ -526,7 +567,11 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
           {hasQuiz && !isFinished && (
             <div className="bg-gradient-to-b from-blue-900/20 to-slate-900/50 border border-blue-500/30 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
-               <div className="flex items-center gap-3 mb-6"><Zap className="w-6 h-6 text-yellow-400" /><h3 className="text-xl font-black text-white uppercase tracking-wider">Reto de Conocimiento</h3></div>
+               <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3"><Zap className="w-6 h-6 text-yellow-400" /><h3 className="text-xl font-black text-white uppercase tracking-wider">Reto de Conocimiento</h3></div>
+                  <span className="text-xs font-bold text-red-400 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 hidden sm:block">Acierto 100% Obligatorio</span>
+               </div>
+               
                <div className="mb-8">
                  <div className="flex justify-between text-sm text-slate-400 mb-2 font-bold"><span>Pregunta {currentQuizIndex + 1} de {lesson.quiz.length}</span></div>
                  <div className="w-full bg-slate-950 rounded-full h-2"><div className="bg-blue-500 h-2 rounded-full transition-all" style={{width: `${((currentQuizIndex + 1) / lesson.quiz.length) * 100}%`}}></div></div>
@@ -557,19 +602,51 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
           )}
 
           {isFinished && (
-            <div className="bg-slate-900/80 border border-blue-500/30 rounded-3xl p-10 shadow-[0_0_50px_rgba(37,99,235,0.1)] text-center max-w-lg mx-auto animate-in zoom-in duration-500">
-               <Trophy className={`w-24 h-24 mx-auto mb-6 ${isAlreadyCompleted ? 'text-slate-500' : 'text-yellow-400'}`} />
-               <h2 className="text-3xl font-black text-white mb-2">{isAlreadyCompleted ? 'Repaso Completado' : '¡Misión Superada!'}</h2>
-               <p className="text-slate-400 mb-8">Acertaste {quizScore} de {lesson.quiz.length} preguntas.</p>
-               {!isAlreadyCompleted && (
-                 <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
-                    <p className="text-xs text-slate-500 font-bold uppercase mb-1">Recompensa Ganada</p>
-                    <p className="text-4xl font-black text-yellow-400">+{lesson.xpReward || 0} <span className="text-xl">XP</span></p>
-                 </div>
+            <div className={`bg-slate-900/80 border rounded-3xl p-10 text-center max-w-lg mx-auto animate-in zoom-in duration-500 ${!passed ? 'border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.1)]' : 'border-blue-500/30 shadow-[0_0_50px_rgba(37,99,235,0.1)]'}`}>
+               
+               {!passed ? (
+                 <AlertOctagon className="w-24 h-24 mx-auto mb-6 text-red-500" />
+               ) : (
+                 <Trophy className={`w-24 h-24 mx-auto mb-6 ${isAlreadyCompleted ? 'text-slate-500' : 'text-yellow-400'}`} />
                )}
-               <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(lesson.xpReward || 0); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2 text-lg">
-                 {isAlreadyCompleted ? 'Volver al Mapa' : 'Reclamar Recompensa'} <Star className="w-5 h-5 fill-current" />
-               </button>
+
+               <h2 className="text-3xl font-black text-white mb-2">
+                 {isAlreadyCompleted ? 'Repaso Completado' : (perfectScore ? '¡Misión Superada!' : 'Reto Fallido')}
+               </h2>
+               
+               <p className="text-slate-400 mb-8">Acertaste {quizScore} de {lesson.quiz.length} preguntas.</p>
+               
+               {!isAlreadyCompleted && (
+                 <>
+                   {perfectScore ? (
+                     <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
+                        <p className="text-xs text-slate-500 font-bold uppercase mb-1">Recompensa Ganada</p>
+                        <p className="text-4xl font-black text-yellow-400">+{lesson.xpReward || 0} <span className="text-xl">XP</span></p>
+                     </div>
+                   ) : (
+                     <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/30 mb-8 inline-block max-w-sm">
+                        <p className="text-red-400 font-bold text-sm">Debes obtener un puntaje perfecto (5/5) para ganar la recompensa y desbloquear la siguiente misión.</p>
+                     </div>
+                   )}
+                 </>
+               )}
+               
+               <div className="flex flex-col gap-4 w-full">
+                 {!passed ? (
+                   <>
+                     <button onClick={handleRetryQuiz} className="w-full py-4 rounded-xl font-black text-white bg-red-600 hover:bg-red-500 transition-all shadow-[0_0_30px_rgba(239,68,68,0.3)] flex justify-center items-center gap-2 text-lg">
+                       <RotateCcw className="w-5 h-5" /> Reintentar Reto
+                     </button>
+                     <button onClick={onBack} className="w-full py-4 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                       Salir al Mapa
+                     </button>
+                   </>
+                 ) : (
+                   <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(lesson.xpReward || 0); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2 text-lg">
+                     {isAlreadyCompleted ? 'Volver al Mapa' : 'Reclamar Recompensa'} <Star className="w-5 h-5 fill-current" />
+                   </button>
+                 )}
+               </div>
             </div>
           )}
         </div>
