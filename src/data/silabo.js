@@ -1,6 +1,5 @@
 // Estructura completa de datos para las Misiones (Sílabo)
 // Basado en: "Fundamentos de Tecnologías de la Información / Tecnologías Emergentes"
-// Estructura exigida: Definición, Características, Ejemplos y 5 preguntas por test.
 
 export const silabo = [
   // =======================================================================
@@ -33,7 +32,7 @@ export const silabo = [
               ]},
               { type: "subtitle", value: "Ejemplos y Casos de Uso" },
               { type: "text", value: "Ejemplos clásicos incluyen la Impresión 3D aplicada a la creación de prótesis médicas, o la Computación Cuántica usada para resolver algoritmos complejos en segundos que a computadoras normales les tomaría años." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=Ftp5X3pq3KI" }
+              { type: "youtube", url: "https://www.youtube.com/watch?v=kYJmI9I2d0k" }
             ],
             quiz: [
               { question: "¿Qué define a una tecnología emergente?", options: ["Un invento de hace 50 años", "Una innovación en desarrollo con potencial de transformar industrias", "Una técnica manual", "Un software desactualizado"], correctAnswer: 1 },
@@ -217,15 +216,14 @@ export const silabo = [
                 "Conocimiento Tácito: Difícil de transferir, basado en la experiencia e intuición personal."
               ]},
               { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "La creación de una 'Wiki' interna en una empresa donde los empleados veteranos redactan manuales (volviendo explícito su conocimiento tácito) para los empleados nuevos." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=kYJmI9I2d0k" }
+              { type: "text", value: "La creación de una 'Wiki' interna en una empresa donde los empleados veteranos redactan manuales para los empleados nuevos." }
             ],
             quiz: [
-              { question: "¿Cuál es el objetivo de la Gestión del Conocimiento?", options: ["Perder información", "Capturar y utilizar eficazmente el conocimiento de una organización", "Ocultar manuales", "Imprimir más papel"], correctAnswer: 1 },
-              { question: "¿Qué es el Conocimiento Explícito?", options: ["Aquel basado en la experiencia personal", "El que es fácil de documentar como en bases de datos y manuales", "El que no se puede escribir", "El que se olvida rápido"], correctAnswer: 1 },
-              { question: "¿Qué es el Conocimiento Tácito?", options: ["Bases de datos en SQL", "Manuales PDF", "Conocimiento arraigado en la experiencia e intuición personal", "Libros físicos"], correctAnswer: 2 },
-              { question: "¿Por qué el conocimiento tácito es un desafío para las empresas?", options: ["Porque ocupa mucho disco duro", "Porque es difícil de transferir si el empleado se va", "Porque es muy barato", "Porque se borra con antivirus"], correctAnswer: 1 },
-              { question: "Una 'Wiki' corporativa es un ejemplo de:", options: ["Transformar conocimiento tácito en explícito", "Juego de rol", "Red social externa", "Pérdida de tiempo"], correctAnswer: 0 }
+              { question: "¿Cuál es el objetivo de la Gestión del Conocimiento?", options: ["Perder información", "Capturar y utilizar el conocimiento de una organización", "Ocultar manuales", "Imprimir más papel"], correctAnswer: 1 },
+              { question: "¿Qué es el Conocimiento Explícito?", options: ["Experiencia personal", "El que es fácil de documentar", "El que no se puede escribir", "El que se olvida"], correctAnswer: 1 },
+              { question: "¿Qué es el Conocimiento Tácito?", options: ["Bases de datos", "Manuales", "Conocimiento arraigado en la intuición personal", "Libros"], correctAnswer: 2 },
+              { question: "¿Por qué el conocimiento tácito es un desafío?", options: ["Ocupa mucho disco duro", "Es difícil de transferir si el empleado se va", "Es muy barato", "Se borra con antivirus"], correctAnswer: 1 },
+              { question: "Una 'Wiki' corporativa es un ejemplo de:", options: ["Transformar conocimiento tácito en explícito", "Juego de rol", "Red social", "Pérdida de tiempo"], correctAnswer: 0 }
             ]
           },
           { 
@@ -236,22 +234,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Aplicación de herramientas tecnológicas modernas para almacenar, proteger y distribuir el capital intelectual de una empresa." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Cloud Computing: Acceso remoto y global a la información.",
-                "Sistemas de Búsqueda Inteligente: IA para recuperar documentos al instante."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Usar Google Workspace o Microsoft 365 en la nube para colaboración en tiempo real, reemplazando a los servidores físicos locales propensos a daños." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qsE2Yc4HkEQ" }
+              { type: "text", value: "Aplicación de herramientas tecnológicas modernas para almacenar, proteger y distribuir el capital intelectual de una empresa." }
             ],
             quiz: [
-              { question: "¿Qué avance tecnológico revolucionó el acceso remoto a la información?", options: ["El disquete", "Cloud Computing (Computación en la nube)", "La máquina de escribir", "El telégrafo"], correctAnswer: 1 },
-              { question: "¿Cómo ayuda la IA en la gestión de documentos?", options: ["Borra los archivos antiguos", "Permite la búsqueda inteligente y recuperación instantánea", "Añade virus", "Imprime automáticamente"], correctAnswer: 1 },
-              { question: "Una ventaja del Cloud Computing es:", options: ["Colaboración en tiempo real desde cualquier lugar", "Depender de discos físicos", "Es más lento", "Solo funciona de día"], correctAnswer: 0 },
-              { question: "¿Qué reemplazó principalmente el almacenamiento en la nube?", options: ["Al teclado", "A los servidores físicos locales propensos a daños", "A las pantallas", "Al internet"], correctAnswer: 1 },
-              { question: "Google Workspace y Microsoft 365 son ejemplos de:", options: ["Software malicioso", "Sistemas de gestión de bases de datos análogos", "Herramientas de colaboración en la nube", "Juegos de video"], correctAnswer: 2 }
+              { question: "¿Qué avance tecnológico revolucionó el acceso remoto a la información?", options: ["El disquete", "Cloud Computing", "La máquina de escribir", "El telégrafo"], correctAnswer: 1 },
+              { question: "¿Cómo ayuda la IA en la gestión de documentos?", options: ["Borra archivos", "Búsqueda inteligente", "Añade virus", "Imprime"], correctAnswer: 1 },
+              { question: "Una ventaja del Cloud Computing es:", options: ["Colaboración global", "Discos físicos", "Es más lento", "Solo funciona de día"], correctAnswer: 0 },
+              { question: "¿Qué reemplazó principalmente el almacenamiento en la nube?", options: ["Al teclado", "Servidores físicos locales", "A las pantallas", "Al internet"], correctAnswer: 1 },
+              { question: "Microsoft 365 es ejemplo de:", options: ["Software malicioso", "Bases de datos análogos", "Colaboración en la nube", "Juegos de video"], correctAnswer: 2 }
             ]
           },
           { 
@@ -262,22 +252,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Es la estructuración formal de la idea de investigación. Generalmente se sintetiza en una pregunta concisa que guía todo el proyecto." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Claridad: Sin ambigüedades.",
-                "Relación de Variables: Debe involucrar causa y efecto (o problema y solución técnica)."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Ejemplo: ¿De qué manera la implementación de un sistema predictivo de IA reducirá los tiempos de espera en el hospital regional de Jipijapa?" },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qM2vjQ5t16A" }
+              { type: "text", value: "Es la estructuración formal de la idea de investigación. Generalmente se sintetiza en una pregunta concisa que guía todo el proyecto." }
             ],
             quiz: [
-              { question: "¿Cómo se suele estructurar la formulación del problema?", options: ["Como un poema", "Como una pregunta de investigación concisa", "Como una lista de compras", "Como un código de programación"], correctAnswer: 1 },
-              { question: "Una buena pregunta de investigación debe tener:", options: ["Claridad y relación de variables", "Muchas palabras complejas", "Respuestas de Sí o No", "Metáforas"], correctAnswer: 0 },
-              { question: "En la formulación, 'relacionar variables' significa:", options: ["Escribir código JavaScript", "Involucrar causa y efecto o problema y solución técnica", "Sumar números", "Cambiar el tipo de letra"], correctAnswer: 1 },
-              { question: "¿Cuál de estas es una buena formulación de problema?", options: ["¿Cómo hacer IA?", "¿De qué manera la IA reducirá tiempos de espera en el hospital X?", "La IA es buena", "¿Cuándo se inventó la IA?"], correctAnswer: 1 },
-              { question: "Formular correctamente el problema equivale a:", options: ["Terminar la tesis", "Estructurar formalmente la dirección de todo el proyecto", "Reprobar el semestre", "Pagar el semestre"], correctAnswer: 1 }
+              { question: "¿Cómo se suele estructurar la formulación del problema?", options: ["Como un poema", "Como una pregunta de investigación", "Lista de compras", "Código de programación"], correctAnswer: 1 },
+              { question: "Una buena pregunta de investigación debe tener:", options: ["Claridad y relación de variables", "Muchas palabras", "Respuestas de Sí o No", "Metáforas"], correctAnswer: 0 },
+              { question: "En la formulación, 'relacionar variables' significa:", options: ["Código JavaScript", "Involucrar causa y efecto", "Sumar números", "Cambiar letra"], correctAnswer: 1 },
+              { question: "¿Cuál de estas es una buena formulación?", options: ["¿Cómo hacer IA?", "¿De qué manera la IA reducirá tiempos?", "La IA es buena", "¿Cuándo se inventó la IA?"], correctAnswer: 1 },
+              { question: "Formular correctamente el problema equivale a:", options: ["Terminar la tesis", "Estructurar la dirección del proyecto", "Reprobar", "Pagar"], correctAnswer: 1 }
             ]
           }
         ]
@@ -294,22 +276,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Se refiere al software y plataformas específicas (CRM, ERP, Chatbots) que automatizan la gestión del conocimiento." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Centralización: Un único lugar para toda la información.",
-                "Integración: Conectan diferentes departamentos (Ventas, RRHH)."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Sistemas CRM (Customer Relationship Management) donde cualquier vendedor de la empresa puede ver el historial completo del cliente." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=8lMIdrlIWOQ" }
+              { type: "text", value: "Se refiere al software específico (CRM, ERP) que automatizan la gestión del conocimiento." }
             ],
             quiz: [
-              { question: "¿Qué hace un sistema CRM?", options: ["Repara computadoras", "Gestiona la relación y conocimiento de los clientes", "Imprime recibos", "Crea virus"], correctAnswer: 1 },
-              { question: "La característica de 'Centralización' indica que:", options: ["La información está en múltiples libretas", "La información se concentra en un solo lugar accesible", "La información es secreta", "Solo el jefe la conoce"], correctAnswer: 1 },
-              { question: "¿Por qué los chatbots son útiles en la gestión de conocimiento?", options: ["Sirven café", "Resuelven dudas frecuentes accediendo a la base de datos automáticamente", "Se quejan del trabajo", "Son adornos web"], correctAnswer: 1 },
-              { question: "¿Qué permite la 'Integración' en estas aplicaciones?", options: ["Conectar diferentes departamentos de la empresa", "Desconectar el internet", "Borrar información vieja", "Trabajar sin energía"], correctAnswer: 0 },
-              { question: "Un ERP (Planificación de Recursos Empresariales) sirve para:", options: ["Jugar en línea", "Administrar e integrar los procesos clave del negocio", "Hacer presentaciones", "Descargar música"], correctAnswer: 1 }
+              { question: "¿Qué hace un sistema CRM?", options: ["Repara computadoras", "Gestiona la relación con los clientes", "Imprime recibos", "Crea virus"], correctAnswer: 1 },
+              { question: "La característica de 'Centralización' indica que:", options: ["Hay múltiples libretas", "La información está en un solo lugar", "Es secreta", "Solo el jefe la conoce"], correctAnswer: 1 },
+              { question: "¿Por qué los chatbots son útiles?", options: ["Sirven café", "Resuelven dudas frecuentes automáticamente", "Se quejan", "Son adornos"], correctAnswer: 1 },
+              { question: "¿Qué permite la 'Integración'?", options: ["Conectar departamentos de la empresa", "Desconectar internet", "Borrar información", "Trabajar sin energía"], correctAnswer: 0 },
+              { question: "Un ERP sirve para:", options: ["Jugar", "Administrar los procesos del negocio", "Hacer presentaciones", "Música"], correctAnswer: 1 }
             ]
           },
           { 
@@ -320,22 +294,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El estudio de cómo los valores, hábitos y la mentalidad de los empleados afectan la implementación exitosa de nuevas tecnologías." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Resistencia al Cambio: Miedo a lo desconocido o pérdida de control.",
-                "Liderazgo Digital: Fomento desde la gerencia para usar herramientas modernas."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Empresas que gastan millones en software de punta, pero fracasan porque no capacitaron a sus empleados o estos se niegan a abandonar el uso de papel." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qsE2Yc4HkEQ" }
+              { type: "text", value: "El estudio de cómo los valores de los empleados afectan la implementación tecnológica." }
             ],
             quiz: [
-              { question: "¿Qué factor humano puede hacer fracasar un proyecto tecnológico?", options: ["La velocidad del CPU", "La resistencia al cambio de los empleados", "El color del software", "El tamaño del monitor"], correctAnswer: 1 },
-              { question: "¿A qué se debe la 'resistencia al cambio'?", options: ["Al exceso de sueldo", "Al miedo a lo desconocido o pérdida de control en el trabajo", "A que el software es gratuito", "A la falta de papel"], correctAnswer: 1 },
-              { question: "El Liderazgo Digital busca:", options: ["Prohibir la tecnología", "Fomentar y guiar la adopción de herramientas modernas", "Despedir a todos", "Volver a la máquina de escribir"], correctAnswer: 1 },
-              { question: "¿De qué sirve el mejor software si no hay capacitación?", options: ["De mucho, el software hace todo", "De poco, el personal no sabrá o no querrá usarlo", "Es indistinto", "Genera más dinero automáticamente"], correctAnswer: 1 },
-              { question: "La adopción tecnológica es un tema de:", options: ["Solo hardware", "Solo licencias de software", "Cultura organizacional y mentalidad", "Cables y redes"], correctAnswer: 2 }
+              { question: "¿Qué factor puede hacer fracasar un proyecto?", options: ["Velocidad del CPU", "La resistencia al cambio", "Color del software", "El monitor"], correctAnswer: 1 },
+              { question: "¿A qué se debe la 'resistencia al cambio'?", options: ["Exceso de sueldo", "Miedo a lo desconocido", "Es gratuito", "Falta de papel"], correctAnswer: 1 },
+              { question: "El Liderazgo Digital busca:", options: ["Prohibir la tecnología", "Fomentar la adopción de herramientas", "Despedir a todos", "Volver al papel"], correctAnswer: 1 },
+              { question: "¿De qué sirve el mejor software si no hay capacitación?", options: ["De mucho", "De poco, el personal no sabrá usarlo", "Es indistinto", "Genera dinero"], correctAnswer: 1 },
+              { question: "La adopción tecnológica es un tema de:", options: ["Hardware", "Licencias", "Cultura organizacional y mentalidad", "Cables"], correctAnswer: 2 }
             ]
           },
           { 
@@ -346,22 +312,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Son las metas del proyecto. El general es la meta principal y abarcadora, los específicos son los pasos secuenciales para lograrla." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Verbos en Infinitivo: Siempre inician con terminación ar, er, ir (Desarrollar, Evaluar).",
-                "Medibles: Deben poder comprobarse al final del proyecto."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "O. General: Desarrollar una app móvil... O. Específicos: 1) Analizar requerimientos, 2) Diseñar interfaz, 3) Programar código." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=Hntg2VqWj0I" }
+              { type: "text", value: "Son las metas del proyecto. El general es la meta principal, los específicos son los pasos." }
             ],
             quiz: [
-              { question: "¿Cuál es la diferencia entre objetivo general y específico?", options: ["Ninguna, son iguales", "El general es la meta final, los específicos son los pasos para lograrla", "El general es opcional", "Los específicos son los materiales a usar"], correctAnswer: 1 },
-              { question: "¿Cómo deben iniciar siempre los objetivos?", options: ["Con un sustantivo", "Con una pregunta", "Con un verbo en infinitivo (ar, er, ir)", "Con el nombre del autor"], correctAnswer: 2 },
-              { question: "¿Cuál de estos es un verbo en infinitivo válido para un objetivo?", options: ["Analizando", "Analizar", "Analicé", "Análisis"], correctAnswer: 1 },
-              { question: "¿Qué característica asegura que sepamos si el proyecto fue un éxito?", options: ["Que los objetivos sean medibles", "Que sean muy largos", "Que estén en inglés", "Que no se puedan cumplir"], correctAnswer: 0 },
-              { question: "Si el proyecto es crear una App, 'Diseñar la base de datos' sería un objetivo:", options: ["General", "Específico", "Imposible", "Subjetivo"], correctAnswer: 1 }
+              { question: "¿Diferencia entre general y específico?", options: ["Ninguna", "El general es la meta final, específicos los pasos", "El general es opcional", "Son materiales"], correctAnswer: 1 },
+              { question: "¿Cómo deben iniciar siempre los objetivos?", options: ["Sustantivo", "Pregunta", "Verbo en infinitivo", "Nombre del autor"], correctAnswer: 2 },
+              { question: "¿Cuál es un verbo en infinitivo válido?", options: ["Analizando", "Analizar", "Analicé", "Análisis"], correctAnswer: 1 },
+              { question: "¿Qué característica asegura medir el éxito?", options: ["Que sean medibles", "Que sean largos", "En inglés", "Imposibles"], correctAnswer: 0 },
+              { question: "'Diseñar la base de datos' para hacer una App sería un objetivo:", options: ["General", "Específico", "Imposible", "Subjetivo"], correctAnswer: 1 }
             ]
           }
         ]
@@ -378,22 +336,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Conjunto de normas y leyes (como el uso de datos personales) que regulan el desarrollo e implementación tecnológica." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Privacidad: Consentimiento del usuario para manejar su información.",
-                "Transparencia: Explicar qué hacen los algoritmos con los datos."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Leyes como GDPR en Europa que castigan con multas millonarias a empresas que venden datos de clientes sin su consentimiento explícito." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qsE2Yc4HkEQ" }
+              { type: "text", value: "Leyes (como GDPR) que regulan el uso de datos." }
             ],
             quiz: [
-              { question: "¿Por qué es importante la ética en la recolección de datos?", options: ["Para llenar el servidor", "Para respetar la privacidad y cumplir las leyes de protección de datos", "Para venderlos más caro", "No es importante"], correctAnswer: 1 },
-              { question: "¿Qué significa 'Transparencia' en este contexto?", options: ["Usar monitores de cristal", "Explicar al usuario qué se hace con sus datos", "Tener código invisible", "No usar contraseñas"], correctAnswer: 1 },
-              { question: "¿Qué es la GDPR?", options: ["Un videojuego", "Una ley de protección de datos europea", "Un lenguaje de programación", "Un componente de hardware"], correctAnswer: 1 },
-              { question: "Vender datos de usuarios sin su permiso es:", options: ["Una buena práctica de negocios", "Una violación ética y legal severa", "Algo que hacen todos", "Un avance tecnológico"], correctAnswer: 1 },
-              { question: "Para manejar datos, se requiere principalmente del usuario:", options: ["Su dinero", "Su consentimiento explícito", "Su computadora", "Su contraseña de correo"], correctAnswer: 1 }
+              { question: "¿Por qué es importante la ética de datos?", options: ["Llenar el servidor", "Respetar la privacidad", "Venderlos", "No es importante"], correctAnswer: 1 },
+              { question: "¿Qué significa 'Transparencia'?", options: ["Monitores de cristal", "Explicar al usuario qué se hace con sus datos", "Código invisible", "No usar contraseñas"], correctAnswer: 1 },
+              { question: "¿Qué es la GDPR?", options: ["Un juego", "Ley de protección de datos", "Lenguaje", "Hardware"], correctAnswer: 1 },
+              { question: "Vender datos sin permiso es:", options: ["Buena práctica", "Violación ética y legal", "Común", "Avance tecnológico"], correctAnswer: 1 },
+              { question: "Para manejar datos se requiere:", options: ["Dinero", "Consentimiento explícito del usuario", "Computadora", "Contraseña"], correctAnswer: 1 }
             ]
           },
           { 
@@ -404,22 +354,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Es la sección del proyecto que defiende su necesidad, respondiendo a las preguntas ¿Por qué es necesario hacerlo? y ¿Para qué servirá?" },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Relevancia Social: ¿A quién beneficia?",
-                "Relevancia Tecnológica: ¿Qué aporta de nuevo en el campo de la TI?"
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Justificar un proyecto de telemedicina indicando que resolverá la falta de especialistas en zonas rurales, salvando vidas (impacto social)." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qM2vjQ5t16A" }
+              { type: "text", value: "Sección que defiende la necesidad del proyecto." }
             ],
             quiz: [
-              { question: "¿Qué preguntas responde la Justificación?", options: ["¿Cómo y cuándo?", "¿Por qué y Para qué?", "¿Quién y cuánto cuesta?", "¿Dónde y con qué computadora?"], correctAnswer: 1 },
-              { question: "Definir a quién beneficia el proyecto establece su:", options: ["Relevancia Social", "Presupuesto", "Conclusión", "Anexo"], correctAnswer: 0 },
-              { question: "Definir qué aporta de nuevo a la Informática establece su:", options: ["Relevancia Tecnológica", "Relevancia Médica", "Introducción", "Índice"], correctAnswer: 0 },
-              { question: "La justificación sirve para:", options: ["Rellenar hojas", "Convencer de la necesidad e importancia del proyecto", "Listar los equipos a comprar", "Poner la bibliografía"], correctAnswer: 1 },
-              { question: "Si un proyecto no tiene una buena justificación:", options: ["Es más fácil de programar", "Puede ser rechazado por falta de impacto o utilidad clara", "Saca mejor nota", "Se vuelve IA"], correctAnswer: 1 }
+              { question: "¿Qué preguntas responde la Justificación?", options: ["¿Cómo y cuándo?", "¿Por qué y Para qué?", "¿Quién y cuánto?", "¿Dónde?"], correctAnswer: 1 },
+              { question: "A quién beneficia el proyecto establece su:", options: ["Relevancia Social", "Presupuesto", "Conclusión", "Anexo"], correctAnswer: 0 },
+              { question: "Qué aporta a la Informática establece su:", options: ["Relevancia Tecnológica", "Relevancia Médica", "Introducción", "Índice"], correctAnswer: 0 },
+              { question: "La justificación sirve para:", options: ["Rellenar", "Convencer de la necesidad e importancia", "Listar equipos", "Bibliografía"], correctAnswer: 1 },
+              { question: "Si un proyecto no tiene justificación:", options: ["Es fácil", "Puede ser rechazado por falta de utilidad", "Mejor nota", "Se vuelve IA"], correctAnswer: 1 }
             ]
           }
         ]
@@ -432,7 +374,7 @@ export const silabo = [
   // =======================================================================
   {
     id: "unit_3",
-    title: "UT 3: Sistemas basados en el Conocimiento (IoT y Blockchain)",
+    title: "UT 3: Sistemas basados en Conocimiento (IoT y Blockchain)",
     description: "Aplicación práctica de IoT, IA Generativa, Cloud Computing y Blockchain.",
     totalXp: 450,
     sessions: [
@@ -448,22 +390,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El IoT es la red de objetos físicos que llevan sensores, software y otras tecnologías integradas para conectarse e intercambiar datos por internet." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Sensores: Recopilan variables del mundo real (temperatura, luz, movimiento).",
-                "Conectividad: Usan Wi-Fi, 5G o Bluetooth para enviar datos."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Agricultura de precisión: Sensores de humedad en la tierra que activan el riego automático solo cuando es necesario." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=LlhmzVL5bm8" }
+              { type: "text", value: "El IoT es la red de objetos físicos que llevan sensores y se conectan a internet." }
             ],
             quiz: [
-              { question: "¿Qué significan las siglas IoT?", options: ["Internet of Technology", "Internet of Things (Internet de las Cosas)", "Internal Output Transfer", "Intelligent Option Tool"], correctAnswer: 1 },
-              { question: "¿Cuál es el componente clave para que un objeto físico sea IoT?", options: ["Una pantalla grande", "Sensores y conexión a internet", "Ser de metal", "Tener batería infinita"], correctAnswer: 1 },
-              { question: "¿Qué hace un sensor IoT?", options: ["Crea páginas web", "Recopila variables físicas del mundo real (ej. temperatura)", "Elimina virus", "Imprime en 3D"], correctAnswer: 1 },
-              { question: "Un ejemplo claro de IoT es:", options: ["Un libro de papel", "Sensores de humedad conectados para riego automático", "Una máquina de escribir", "Una guitarra acústica"], correctAnswer: 1 },
-              { question: "La conectividad en IoT se logra habitualmente mediante:", options: ["Cables VGA", "Wi-Fi, 5G, Bluetooth", "Cuerdas", "Señales de humo"], correctAnswer: 1 }
+              { question: "¿Qué significan las siglas IoT?", options: ["Internet of Technology", "Internet of Things", "Internal Output", "Intelligent Tool"], correctAnswer: 1 },
+              { question: "Componente clave de un objeto IoT:", options: ["Pantalla", "Sensores y conexión a internet", "Metal", "Batería infinita"], correctAnswer: 1 },
+              { question: "¿Qué hace un sensor IoT?", options: ["Crea webs", "Recopila variables físicas", "Elimina virus", "Imprime en 3D"], correctAnswer: 1 },
+              { question: "Un ejemplo claro de IoT es:", options: ["Libro", "Sensores de humedad conectados", "Máquina de escribir", "Guitarra"], correctAnswer: 1 },
+              { question: "La conectividad en IoT se logra mediante:", options: ["Cables VGA", "Wi-Fi, 5G, Bluetooth", "Cuerdas", "Señales de humo"], correctAnswer: 1 }
             ]
           },
           { 
@@ -474,22 +408,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "La IA Generativa usa redes neuronales profundas para crear contenido nuevo (texto, imágenes, audio o código) a partir de descripciones (prompts)." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Creación de contenido sintético.",
-                "Basada en LLMs (Modelos de Lenguaje Grande)."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "ChatGPT para redactar ensayos y código, Midjourney o DALL-E para generar arte digital desde texto." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=8lMIdrlIWOQ" }
+              { type: "text", value: "La IA Generativa usa redes neuronales profundas para crear contenido nuevo." }
             ],
             quiz: [
-              { question: "¿Qué diferencia a la IA Generativa de otras IAs?", options: ["Que es más lenta", "Que crea contenido nuevo y sintético (texto, imágenes)", "Que no usa internet", "Que solo funciona en celulares"], correctAnswer: 1 },
-              { question: "¿Cómo se llama la instrucción de texto que se le da a una IA Generativa?", options: ["Código fuente", "Prompt", "Script", "Macro"], correctAnswer: 1 },
-              { question: "ChatGPT es un ejemplo de IA generativa basada en:", options: ["Imágenes", "Modelos de Lenguaje Grande (LLMs)", "Cálculo matemático 3D", "Robótica física"], correctAnswer: 1 },
-              { question: "DALL-E y Midjourney se especializan en:", options: ["Generar imágenes y arte a partir de texto", "Hacer hojas de cálculo", "Limpiar malware", "Manejar vehículos"], correctAnswer: 0 },
-              { question: "La IA Generativa puede programar código:", options: ["Falso, solo sabe escribir poemas", "Verdadero, puede generar scripts y código funcional", "Solo si es en HTML básico", "Falso, es ilegal"], correctAnswer: 1 }
+              { question: "¿Qué diferencia a la IA Generativa?", options: ["Es más lenta", "Crea contenido nuevo y sintético", "No usa internet", "Solo en celulares"], correctAnswer: 1 },
+              { question: "¿Cómo se llama la instrucción de texto que se le da?", options: ["Código", "Prompt", "Script", "Macro"], correctAnswer: 1 },
+              { question: "ChatGPT está basado en:", options: ["Imágenes", "Modelos de Lenguaje Grande (LLMs)", "Cálculo 3D", "Robótica"], correctAnswer: 1 },
+              { question: "Midjourney se especializa en:", options: ["Generar imágenes desde texto", "Hacer hojas de cálculo", "Limpiar malware", "Manejar vehículos"], correctAnswer: 0 },
+              { question: "La IA Generativa puede programar:", options: ["Falso", "Verdadero, puede generar código", "Solo HTML", "Es ilegal"], correctAnswer: 1 }
             ]
           }
         ]
@@ -506,48 +432,32 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Cloud procesa los datos en servidores centrales lejanos. Edge Computing procesa los datos de forma local, en el mismo dispositivo o muy cerca de él." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Cloud: Alta capacidad de procesamiento, pero requiere envío de datos por internet.",
-                "Edge: Procesamiento inmediato, baja latencia (sin esperar al servidor)."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "En un vehículo autónomo, decisiones críticas como frenar se procesan en el Edge (computadora del carro) para no depender de la latencia del internet (Cloud)." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qsE2Yc4HkEQ" }
+              { type: "text", value: "Cloud procesa en servidores remotos. Edge procesa localmente." }
             ],
             quiz: [
-              { question: "¿Dónde se procesan los datos en el Cloud Computing?", options: ["En el celular del usuario", "En servidores centrales remotos", "En un pendrive", "En la memoria RAM local"], correctAnswer: 1 },
-              { question: "¿Dónde se procesan los datos en el Edge Computing?", options: ["En la nube", "Localmente, muy cerca o dentro del dispositivo generador del dato", "En servidores de Google únicamente", "En papel"], correctAnswer: 1 },
-              { question: "¿Cuál es la principal ventaja del Edge Computing?", options: ["Tiene capacidad infinita", "Baja latencia (procesamiento casi instantáneo)", "Es 100% en línea", "Reemplaza al monitor"], correctAnswer: 1 },
-              { question: "Para el frenado de emergencia de un carro autónomo, es mejor usar:", options: ["Cloud Computing", "Edge Computing", "Correo electrónico", "No usar computadora"], correctAnswer: 1 },
-              { question: "Cloud Computing destaca por su:", options: ["Velocidad sin internet", "Alta capacidad de procesamiento masivo y almacenamiento", "Procesamiento local", "Incapacidad de conexión"], correctAnswer: 1 }
+              { question: "¿Dónde procesa Cloud?", options: ["Celular", "Servidores centrales remotos", "Pendrive", "RAM local"], correctAnswer: 1 },
+              { question: "¿Dónde procesa Edge?", options: ["Nube", "Localmente cerca del dispositivo", "Google", "Papel"], correctAnswer: 1 },
+              { question: "Principal ventaja de Edge:", options: ["Capacidad", "Baja latencia", "En línea", "Monitor"], correctAnswer: 1 },
+              { question: "Para un carro autónomo es mejor:", options: ["Cloud", "Edge Computing", "Correo", "Nada"], correctAnswer: 1 },
+              { question: "Cloud destaca por:", options: ["Sin internet", "Alta capacidad masiva", "Local", "Incapacidad"], correctAnswer: 1 }
             ]
           },
           { 
             id: "l3_4", 
-            title: "3.4 Blockchain para verificación de datos", 
+            title: "3.4 Blockchain para verificación", 
             type: "theory", 
             xpReward: 50, 
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Es un libro de contabilidad digital descentralizado donde la información se guarda en 'bloques' enlazados criptográficamente, haciéndola imposible de alterar." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Descentralización: No depende de un servidor central.",
-                "Inmutabilidad: Lo registrado no se puede borrar o editar en secreto."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Más allá de criptomonedas, se usa para Trazabilidad: rastrear si un medicamento es auténtico desde la fábrica hasta la farmacia, evitando falsificaciones." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=LlhmzVL5bm8" }
+              { type: "text", value: "Libro de registros descentralizado e inmutable." }
             ],
             quiz: [
-              { question: "¿Qué es esencialmente el Blockchain?", options: ["Un editor de video", "Un libro de registros digital, descentralizado y seguro", "Un servidor central", "Una red social"], correctAnswer: 1 },
-              { question: "La 'Inmutabilidad' en Blockchain significa que:", options: ["Los datos son transparentes", "Lo registrado no se puede alterar ni borrar en secreto", "La red se cae", "Los bloques son de hielo"], correctAnswer: 1 },
-              { question: "¿Por qué el Blockchain es descentralizado?", options: ["Porque no depende de un único servidor o autoridad central", "Porque no funciona bien", "Porque requiere un administrador supremo", "Porque usa cables"], correctAnswer: 0 },
-              { question: "Aparte de criptomonedas, un uso corporativo de Blockchain es:", options: ["Jugar solitario", "Trazabilidad segura en cadenas de suministro", "Reproducir música", "Imprimir fotos"], correctAnswer: 1 },
-              { question: "¿Cómo se aseguran los bloques en la cadena?", options: ["Con candados físicos", "Mediante enlaces criptográficos complejos", "Con contraseñas simples como '1234'", "Con firmas de tinta"], correctAnswer: 1 }
+              { question: "¿Qué es Blockchain?", options: ["Editor", "Libro de registros digital descentralizado", "Servidor", "Red social"], correctAnswer: 1 },
+              { question: "'Inmutabilidad' significa:", options: ["Transparentes", "No se puede alterar ni borrar en secreto", "Se cae", "Hielo"], correctAnswer: 1 },
+              { question: "¿Por qué es descentralizado?", options: ["No depende de un único servidor", "No funciona", "Tiene administrador", "Usa cables"], correctAnswer: 0 },
+              { question: "Un uso corporativo es:", options: ["Solitario", "Trazabilidad segura", "Música", "Fotos"], correctAnswer: 1 },
+              { question: "¿Cómo se aseguran los bloques?", options: ["Candados", "Enlaces criptográficos", "Contraseñas simples", "Firmas"], correctAnswer: 1 }
             ]
           }
         ]
@@ -564,48 +474,32 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "La Realidad Virtual (VR) sumerge al usuario en un mundo 100% digital. La Realidad Aumentada (AR) superpone elementos digitales sobre el mundo real." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Inmersión: Sensación de presencia física en entornos generados.",
-                "Interactividad: Manipulación de objetos 3D en tiempo real."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "AR para que mecánicos vean las instrucciones flotando sobre un motor mientras lo reparan. VR para simuladores de vuelo o cirugía." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=kYJmI9I2d0k" }
+              { type: "text", value: "VR sumerge totalmente, AR superpone en el mundo real." }
             ],
             quiz: [
-              { question: "¿Cuál es la diferencia entre VR y AR?", options: ["Son lo mismo", "VR sumerge totalmente, AR superpone en el mundo real", "VR es aburrido, AR es divertido", "VR es para PC, AR no existe"], correctAnswer: 1 },
-              { question: "Si ves hologramas flotando en tu sala a través de unos lentes, es:", options: ["Realidad Virtual (VR)", "Realidad Aumentada (AR)", "Televisión analógica", "Computación Cuántica"], correctAnswer: 1 },
-              { question: "Un simulador de vuelo donde no ves nada del cuarto físico donde estás, utiliza:", options: ["Realidad Aumentada (AR)", "Realidad Virtual (VR)", "Blockchain", "Impresora 3D"], correctAnswer: 1 },
-              { question: "La inmersión se refiere a:", options: ["Meterse en el agua", "La sensación de presencia física en un entorno digital", "La pantalla apagada", "Un tipo de cable"], correctAnswer: 1 },
-              { question: "¿Cuál es un uso industrial de la AR?", options: ["Jugar videojuegos en la fábrica", "Ver manuales y guías flotando sobre la maquinaria a reparar", "Dormir en el trabajo", "Vender computadoras"], correctAnswer: 1 }
+              { question: "¿Diferencia entre VR y AR?", options: ["Lo mismo", "VR sumerge totalmente, AR superpone", "VR aburrido", "PC vs Consola"], correctAnswer: 1 },
+              { question: "Hologramas en tu sala es:", options: ["VR", "Realidad Aumentada (AR)", "TV", "Cuántica"], correctAnswer: 1 },
+              { question: "Simulador de vuelo ciego es:", options: ["AR", "Realidad Virtual (VR)", "Blockchain", "3D"], correctAnswer: 1 },
+              { question: "La inmersión es:", options: ["Agua", "Sensación de presencia física digital", "Pantalla", "Cable"], correctAnswer: 1 },
+              { question: "Uso industrial de AR:", options: ["Juegos", "Ver manuales flotando sobre maquinaria", "Dormir", "Vender"], correctAnswer: 1 }
             ]
           },
           { 
             id: "l3_6", 
-            title: "3.6 Gobernanza en sistemas inteligentes", 
+            title: "3.6 Gobernanza en IA", 
             type: "theory", 
             xpReward: 50, 
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "Es el conjunto de reglas, auditorías y responsabilidades legales impuestas sobre los algoritmos para evitar decisiones perjudiciales o sesgadas." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Explicabilidad: Entender por qué la IA tomó una decisión.",
-                "Responsabilidad legal: Quién paga los daños si la IA falla."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Si un vehículo autónomo operado por IA atropella a alguien, la gobernanza define si la culpa es del programador, la empresa o el dueño." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qM2vjQ5t16A" }
+              { type: "text", value: "Reglas legales sobre algoritmos para evitar daños." }
             ],
             quiz: [
-              { question: "¿Qué busca la gobernanza en la IA?", options: ["Hacerla más rápida", "Establecer reglas, responsabilidades y evitar daños éticos", "Darle derechos de ciudadano a las máquinas", "Reducir el tamaño del disco"], correctAnswer: 1 },
-              { question: "La 'Explicabilidad' significa:", options: ["Poder entender y auditar el por qué la IA tomó esa decisión", "Que el código fuente sea público", "Que la máquina hable en voz alta", "Que no haya contraseñas"], correctAnswer: 0 },
-              { question: "El dilema de si la culpa es del creador o del dueño ante un accidente de IA entra en:", options: ["Programación orientada a objetos", "Responsabilidad legal y Gobernanza", "Diseño gráfico", "Hardware"], correctAnswer: 1 },
-              { question: "¿Por qué es riesgoso dejar IA sin gobernanza?", options: ["Porque consumen mucha electricidad", "Pueden tomar decisiones sesgadas o perjudiciales masivamente", "Se vuelven lentas", "Se borran solas"], correctAnswer: 1 },
-              { question: "Una auditoría de algoritmo busca:", options: ["Cambiarle el nombre", "Verificar que sus decisiones sean justas y cumplan normas", "Vender el algoritmo", "Aumentar sus colores"], correctAnswer: 1 }
+              { question: "¿Qué busca la gobernanza?", options: ["Más rapidez", "Establecer reglas éticas y legales", "Dar derechos", "Reducir disco"], correctAnswer: 1 },
+              { question: "'Explicabilidad' significa:", options: ["Poder auditar por qué la IA decidió eso", "Código público", "Máquina habla", "Sin contraseñas"], correctAnswer: 0 },
+              { question: "El dilema de la culpa ante accidentes es:", options: ["POO", "Responsabilidad legal", "Diseño", "Hardware"], correctAnswer: 1 },
+              { question: "¿Riesgo de IA sin gobernanza?", options: ["Electricidad", "Decisiones sesgadas perjudiciales", "Lentas", "Se borran"], correctAnswer: 1 },
+              { question: "Auditoría de algoritmo busca:", options: ["Nombre", "Verificar que decisiones sean justas", "Vender", "Colores"], correctAnswer: 1 }
             ]
           }
         ]
@@ -618,8 +512,8 @@ export const silabo = [
   // =======================================================================
   {
     id: "unit_4",
-    title: "UT 4: Aprendizaje Automático e Incertidumbre en IA",
-    description: "Introducción profunda al Machine Learning y el manejo algorítmico.",
+    title: "UT 4: Aprendizaje Automático e Incertidumbre",
+    description: "Introducción al Machine Learning.",
     totalXp: 400,
     sessions: [
       {
@@ -634,22 +528,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El Aprendizaje Automático (ML) es la rama de la IA que permite a los sistemas aprender patrones y mejorar su rendimiento con la experiencia sin ser programados paso a paso." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Basado en Datos: Cuantos más datos analiza, mejor se vuelve.",
-                "Predicción: Identifica tendencias futuras basadas en el historial."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Sistemas de recomendación en Spotify o YouTube, que aprenden tus gustos musicales analizando tus clics pasados." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=KytW151dpqU" }
+              { type: "text", value: "Sistemas que aprenden patrones a través de datos." }
             ],
             quiz: [
-              { question: "¿El Machine Learning requiere ser programado explícitamente regla por regla?", options: ["Sí, es obligatorio", "No, aprende patrones a partir de los datos", "A veces, solo los viernes", "Solo para cosas simples"], correctAnswer: 1 },
-              { question: "¿Qué necesita primordialmente el ML para aprender y mejorar?", options: ["Teclados nuevos", "Gran cantidad de datos de entrenamiento", "Pantallas grandes", "Conexión bluetooth"], correctAnswer: 1 },
-              { question: "Un algoritmo de ML prediciendo si te gustará una película usa:", options: ["Adivinación mágica", "Tendencias basadas en tu historial de datos", "Cámaras ocultas", "El clima actual"], correctAnswer: 1 },
-              { question: "¿De qué rama general forma parte el Machine Learning?", options: ["Bases de Datos Relacionales", "Inteligencia Artificial", "Diseño Web", "Redes LAN"], correctAnswer: 1 },
-              { question: "El rendimiento del Machine Learning suele mejorar con:", options: ["La experiencia (más exposición a datos)", "Estar apagado un tiempo", "Usar monitores 4K", "Tener menos memoria"], correctAnswer: 0 }
+              { question: "¿Requiere programación explícita regla por regla?", options: ["Sí", "No, aprende patrones de datos", "A veces", "Solo simple"], correctAnswer: 1 },
+              { question: "¿Qué necesita el ML primordialmente?", options: ["Teclados", "Gran cantidad de datos de entrenamiento", "Pantallas", "Bluetooth"], correctAnswer: 1 },
+              { question: "Un algoritmo prediciendo películas usa:", options: ["Magia", "Tendencias basadas en tu historial", "Cámaras", "Clima"], correctAnswer: 1 },
+              { question: "¿De qué rama es el ML?", options: ["Bases", "Inteligencia Artificial", "Web", "Redes"], correctAnswer: 1 },
+              { question: "El rendimiento mejora con:", options: ["La experiencia (más datos)", "Apagar", "4K", "Menos memoria"], correctAnswer: 0 }
             ]
           },
           { 
@@ -660,23 +546,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El ML se divide según la forma en que los datos son presentados al algoritmo durante el entrenamiento." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Aprendizaje Supervisado: Entrenado con datos ya etiquetados (respuestas correctas provistas).",
-                "Aprendizaje No Supervisado: Busca patrones en datos crudos, sin etiquetas.",
-                "Aprendizaje por Refuerzo: El algoritmo aprende mediante ensayo y error, recibiendo 'premios' o 'castigos'."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Supervisado: Enseñar a la IA a detectar spam dándole 1000 correos que ya dicen 'Es Spam'. Refuerzo: Una IA aprendiendo a jugar ajedrez perdiendo partidas miles de veces." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=8lMIdrlIWOQ" }
+              { type: "text", value: "Supervisado (etiquetas), No Supervisado (sin etiquetas), Refuerzo (premios)." }
             ],
             quiz: [
-              { question: "El aprendizaje donde los datos de entrenamiento ya tienen las etiquetas correctas se llama:", options: ["No Supervisado", "Supervisado", "Por Refuerzo", "Aleatorio"], correctAnswer: 1 },
-              { question: "El aprendizaje que busca patrones en datos desordenados y sin etiquetas es:", options: ["Supervisado", "Por Refuerzo", "No Supervisado", "Lineal"], correctAnswer: 2 },
-              { question: "Si un algoritmo aprende mediante sistema de recompensas y castigos (ensayo y error), usa:", options: ["Aprendizaje Supervisado", "Aprendizaje No Supervisado", "Aprendizaje por Refuerzo", "Bases de datos estáticas"], correctAnswer: 2 },
-              { question: "Darle a un algoritmo mil fotos etiquetadas como 'Gato' o 'Perro' es un ejemplo de aprendizaje:", options: ["No Supervisado", "Supervisado", "Por Refuerzo", "Caja Negra"], correctAnswer: 1 },
-              { question: "La categoría del algoritmo se define por:", options: ["El lenguaje de programación", "La forma en que se presentan los datos en el entrenamiento", "La marca de la computadora", "El color de la interfaz"], correctAnswer: 1 }
+              { question: "Datos con etiquetas correctas:", options: ["No Supervisado", "Supervisado", "Refuerzo", "Aleatorio"], correctAnswer: 1 },
+              { question: "Busca patrones en datos sin etiquetas:", options: ["Supervisado", "Refuerzo", "No Supervisado", "Lineal"], correctAnswer: 2 },
+              { question: "Aprende por recompensas (ensayo y error):", options: ["Supervisado", "No Supervisado", "Aprendizaje por Refuerzo", "Estático"], correctAnswer: 2 },
+              { question: "Mil fotos etiquetadas como 'Gato' es:", options: ["No Supervisado", "Supervisado", "Refuerzo", "Caja Negra"], correctAnswer: 1 },
+              { question: "La categoría se define por:", options: ["Lenguaje", "Forma de presentar datos en entrenamiento", "Marca", "Color"], correctAnswer: 1 }
             ]
           }
         ]
@@ -693,48 +570,32 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El uso de modelos predictivos en el mundo real para resolver problemas complejos de forma automática." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Detección de Anomalías: Encontrar comportamientos inusuales.",
-                "Clasificación: Asignar elementos a categorías."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Los bancos usan ML para detectar transacciones fraudulentas de tarjetas de crédito en milisegundos (detección de anomalías)." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=qsE2Yc4HkEQ" }
+              { type: "text", value: "Uso de modelos para predecir, clasificar o detectar anomalías." }
             ],
             quiz: [
-              { question: "La detección de fraudes bancarios es una aplicación que usa principalmente:", options: ["Impresión 3D", "Detección de anomalías con Machine Learning", "Blockchain exclusivamente", "Realidad Virtual"], correctAnswer: 1 },
-              { question: "Separar automáticamente correos en 'Spam' y 'Principal' es una tarea de:", options: ["Detección de anomalías", "Clasificación", "Por refuerzo", "Hardware"], correctAnswer: 1 },
-              { question: "Una aplicación práctica del ML en el día a día NO incluye:", options: ["Reconocimiento facial del celular", "Sistemas de recomendación de Netflix", "Barrer la calle con una escoba", "Filtros de Instagram que siguen el rostro"], correctAnswer: 2 },
-              { question: "¿Por qué el ML es útil en los bancos?", options: ["Porque imprime billetes", "Porque analiza millones de transacciones en milisegundos buscando fraudes", "Porque reemplaza a las bóvedas", "Porque atiende en ventanilla físicamente"], correctAnswer: 1 },
-              { question: "La capacidad predictiva del ML se usa en:", options: ["Pasar VHS a DVD", "Identificar tendencias futuras como el clima o la bolsa de valores", "Pintar paredes", "Desarrollar teclados"], correctAnswer: 1 }
+              { question: "Detección de fraudes bancarios usa:", options: ["3D", "Detección de anomalías con ML", "Blockchain", "VR"], correctAnswer: 1 },
+              { question: "Separar correos en Spam es:", options: ["Anomalías", "Clasificación", "Refuerzo", "Hardware"], correctAnswer: 1 },
+              { question: "No es una aplicación de ML:", options: ["Reconocimiento facial", "Netflix", "Barrer la calle", "Filtros Instagram"], correctAnswer: 2 },
+              { question: "¿Por qué ML en bancos?", options: ["Imprime", "Analiza transacciones buscando fraudes", "Bóvedas", "Ventanilla"], correctAnswer: 1 },
+              { question: "Capacidad predictiva se usa en:", options: ["VHS a DVD", "Tendencias futuras (clima, bolsa)", "Pintar", "Teclados"], correctAnswer: 1 }
             ]
           },
           { 
             id: "l4_4", 
-            title: "4.4 Incertidumbre en Inteligencia Artificial", 
+            title: "4.4 Incertidumbre en IA", 
             type: "theory", 
             xpReward: 50, 
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "El mundo real no es determinista. La incertidumbre ocurre cuando un algoritmo debe tomar decisiones basándose en datos incompletos o ruidosos." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Probabilidad: La IA usa matemáticas para calcular el 'porcentaje de confianza' de su respuesta.",
-                "Redes Bayesianas: Modelos gráficos que calculan probabilidades de causas y efectos."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Un médico usando IA para un diagnóstico. La IA no dirá 'Tiene gripe', sino 'Hay un 85% de probabilidad de gripe', manejando la incertidumbre de los síntomas." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=LlhmzVL5bm8" }
+              { type: "text", value: "Decisiones con datos incompletos usando probabilidad." }
             ],
             quiz: [
-              { question: "¿Qué causa la 'Incertidumbre' en un modelo de IA?", options: ["Datos incompletos, ruidosos o ambiguos", "Que la computadora es muy potente", "Una buena conexión a internet", "El exceso de memoria"], correctAnswer: 0 },
-              { question: "¿Cómo maneja matemáticamente la IA esta incertidumbre?", options: ["Con sumas y restas simples", "Usando probabilidad y porcentaje de confianza", "Apagándose", "Ignorando el problema"], correctAnswer: 1 },
-              { question: "¿Qué es una Red Bayesiana?", options: ["Una red social nueva", "Un modelo gráfico probabilístico para calcular causas y efectos", "Un tipo de cable de red", "Una marca de computadora"], correctAnswer: 1 },
-              { question: "La IA frente al mundo real asume que este es:", options: ["Totalmente determinista y perfecto", "Ruidoso y con cierto nivel de incertidumbre", "Un holograma", "Binario puro"], correctAnswer: 1 },
-              { question: "Ante la incertidumbre, la respuesta de una IA predictiva suele ser:", options: ["Un 'Sí' o 'No' absoluto", "Un porcentaje de probabilidad", "Un chiste", "Un cierre de sistema"], correctAnswer: 1 }
+              { question: "¿Qué causa incertidumbre en IA?", options: ["Datos incompletos o ambiguos", "Computadora potente", "Internet", "Memoria"], correctAnswer: 0 },
+              { question: "¿Cómo se maneja matemáticamente?", options: ["Sumas", "Probabilidad y porcentaje de confianza", "Apagando", "Ignorando"], correctAnswer: 1 },
+              { question: "¿Qué es una Red Bayesiana?", options: ["Red social", "Modelo gráfico probabilístico", "Cable", "Computadora"], correctAnswer: 1 },
+              { question: "La IA asume que el mundo real es:", options: ["Perfecto", "Ruidoso y con incertidumbre", "Holograma", "Binario"], correctAnswer: 1 },
+              { question: "Ante la incertidumbre, la IA da:", options: ["Sí o No", "Un porcentaje de probabilidad", "Chiste", "Cierre"], correctAnswer: 1 }
             ]
           }
         ]
@@ -745,28 +606,20 @@ export const silabo = [
         lessons: [
           { 
             id: "l4_5", 
-            title: "4.5 Modularidad en Diseño de IA", 
+            title: "4.5 Modularidad", 
             type: "theory", 
             xpReward: 40, 
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "La práctica de dividir un gran sistema de software en partes pequeñas e independientes (módulos), donde cada módulo hace una sola cosa." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Independencia: Si un módulo falla, el sistema completo no cae.",
-                "Actualización Fácil: Puedes mejorar una parte sin tocar el resto."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "En un robot, tener un módulo de IA solo para 'ver' (visión artificial) y otro solo para 'caminar'. Si actualizas la cámara, no afecta a las piernas." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=kYJmI9I2d0k" }
+              { type: "text", value: "Dividir el sistema en partes independientes." }
             ],
             quiz: [
-              { question: "¿Qué es la modularidad en diseño de sistemas?", options: ["Hacer el código en un solo archivo gigante", "Dividir el sistema en partes pequeñas e independientes", "Usar monitores modulares", "Eliminar el código fuente"], correctAnswer: 1 },
-              { question: "Una ventaja principal de la modularidad es:", options: ["Hace que el sistema sea imposible de entender", "Permite actualizar un módulo sin afectar a los demás", "Que es más barato comprar hardware", "Consume toda la memoria RAM"], correctAnswer: 1 },
-              { question: "Si un módulo falla en un sistema modular:", options: ["Todo el sistema se destruye", "Generalmente el sistema completo no colapsa totalmente", "Se borra la base de datos", "El teclado deja de funcionar"], correctAnswer: 1 },
-              { question: "Tener el sistema de visión y el sistema motor de un robot separados es un ejemplo de:", options: ["Desorden", "Modularidad", "Gobernanza", "Blockchain"], correctAnswer: 1 },
-              { question: "¿Qué principio busca que cada parte del código haga una sola cosa específica?", options: ["Monolithic Design", "Modularidad (Alta Cohesión)", "Spaghetti Code", "Redes LAN"], correctAnswer: 1 }
+              { question: "¿Qué es la modularidad?", options: ["Archivo gigante", "Dividir en partes independientes", "Monitores", "Eliminar código"], correctAnswer: 1 },
+              { question: "Ventaja principal:", options: ["Imposible de entender", "Actualizar un módulo sin afectar el resto", "Barato", "Consume RAM"], correctAnswer: 1 },
+              { question: "Si un módulo falla:", options: ["Todo se destruye", "El sistema completo no colapsa", "Se borra BD", "Teclado falla"], correctAnswer: 1 },
+              { question: "Visión y motor separados en robot es:", options: ["Desorden", "Modularidad", "Gobernanza", "Blockchain"], correctAnswer: 1 },
+              { question: "¿Qué principio busca esto?", options: ["Monolithic", "Alta Cohesión/Modularidad", "Spaghetti", "LAN"], correctAnswer: 1 }
             ]
           },
           { 
@@ -777,22 +630,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "En lógica formal, un sistema monótono nunca invalida conclusiones pasadas al recibir datos nuevos. La IA moderna usa lógica no-monótona, adaptándose al cambiar de contexto." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Lógica Monótona: Hechos rígidos (Matemáticas puras).",
-                "Lógica No-Monótona: Razonamiento flexible o por defecto (Sentido común)."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Regla inicial: 'Las aves vuelan'. El pingüino es ave, conclusión monótona: 'Vuela' (Error). Lógica No-Monótona: 'Las aves vuelan, a menos que sea un pingüino' (Se corrige con datos nuevos)." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=8lMIdrlIWOQ" }
+              { type: "text", value: "Monótona (hechos rígidos), No-Monótona (adaptable)." }
             ],
             quiz: [
-              { question: "En un sistema de lógica monótona, agregar nueva información:", options: ["Borra la memoria", "Nunca invalida las conclusiones pasadas", "Cambia las matemáticas", "Hace que la IA se enoje"], correctAnswer: 1 },
-              { question: "El razonamiento de sentido común humano se parece más a:", options: ["Lógica Monótona", "Lógica No-Monótona (flexible a nuevos datos contrarios)", "Cálculo diferencial puro", "Lógica binaria estricta"], correctAnswer: 1 },
-              { question: "Si una conclusión anterior se anula porque recibimos un dato nuevo que la contradice, usamos:", options: ["Lógica Monótona", "Lógica No-Monótona", "Un error de sistema", "Un bucle infinito"], correctAnswer: 1 },
-              { question: "La matemática pura (2+2=4 independientemente del contexto) es el mejor ejemplo de:", options: ["Lógica Monótona", "Lógica No-Monótona", "Redes Neuronales", "Blockchain"], correctAnswer: 0 },
-              { question: "Para que un sistema experto médico no cometa errores letales al descubrir nuevos síntomas, debe usar:", options: ["Lógica monótona estricta", "Lógica no-monótona para adaptar el diagnóstico", "Impresión 3D", "Un reloj inteligente"], correctAnswer: 1 }
+              { question: "En lógica monótona, nueva información:", options: ["Borra memoria", "Nunca invalida conclusiones pasadas", "Cambia mates", "Enoja a IA"], correctAnswer: 1 },
+              { question: "Razonamiento humano es:", options: ["Monótona", "No-Monótona (flexible)", "Cálculo", "Binaria"], correctAnswer: 1 },
+              { question: "Si un dato nuevo anula una conclusión:", options: ["Monótona", "Lógica No-Monótona", "Error", "Bucle"], correctAnswer: 1 },
+              { question: "Matemática pura es:", options: ["Lógica Monótona", "No-Monótona", "Redes", "Blockchain"], correctAnswer: 0 },
+              { question: "Sistema médico ante nuevos síntomas usa:", options: ["Monótona", "Lógica No-Monótona", "3D", "Reloj"], correctAnswer: 1 }
             ]
           },
           { 
@@ -803,22 +648,14 @@ export const silabo = [
             isUnlocked: false,
             content: [
               { type: "subtitle", value: "Definición" },
-              { type: "text", value: "La defensa y demostración de las habilidades investigativas y técnicas adquiridas durante el desarrollo del proyecto final." },
-              { type: "subtitle", value: "Características Principales" },
-              { type: "list", items: [
-                "Síntesis: Explicar 6 meses de trabajo en 15 minutos.",
-                "Oratoria y Apoyo Visual: Diapositivas limpias, sin exceso de texto."
-              ]},
-              { type: "subtitle", value: "Ejemplos y Casos de Uso" },
-              { type: "text", value: "Presentar un prototipo de IoT mostrando la placa física y la base de datos en tiempo real, demostrando que el problema formulado fue resuelto." },
-              { type: "youtube", url: "https://www.youtube.com/watch?v=Hntg2VqWj0I" }
+              { type: "text", value: "Defensa técnica del proyecto final." }
             ],
             quiz: [
-              { question: "¿Cuál es el objetivo de la presentación final del proyecto?", options: ["Leer un documento de 100 páginas", "Defender y demostrar las habilidades técnicas y la solución al problema", "Hacer tiempo", "Solo mostrar fotos"], correctAnswer: 1 },
-              { question: "Una regla de oro en las diapositivas de apoyo visual es:", options: ["Poner todo el texto del proyecto en ellas", "Usar letras muy pequeñas", "Sintetizar la información y evitar el exceso de texto", "No poner imágenes"], correctAnswer: 2 },
-              { question: "La presentación final debe enfocarse principalmente en responder a:", options: ["¿Cómo se llama el equipo?", "¿Cómo se resolvió el problema inicialmente planteado?", "¿Cuánto costó la impresión?", "¿A qué hora termina la clase?"], correctAnswer: 1 },
-              { question: "Si presentas un prototipo tecnológico, lo ideal es:", options: ["Solo hablar de él teóricamente", "Hacer una demostración técnica de que funciona", "Dejarlo en casa", "Mostrar un dibujo a mano"], correctAnswer: 1 },
-              { question: "La habilidad clave durante la defensa verbal del proyecto es la:", options: ["Programación C++", "Síntesis y Oratoria", "Velocidad de tipeo", "Memoria visual absoluta"], correctAnswer: 1 }
+              { question: "Objetivo de la presentación:", options: ["Leer documento", "Defender y demostrar la solución", "Hacer tiempo", "Fotos"], correctAnswer: 1 },
+              { question: "Regla de oro en diapositivas:", options: ["Poner todo el texto", "Letra pequeña", "Sintetizar y evitar exceso de texto", "Sin imágenes"], correctAnswer: 2 },
+              { question: "Enfocarse en responder a:", options: ["Nombre", "¿Cómo se resolvió el problema?", "Costo", "Hora"], correctAnswer: 1 },
+              { question: "Si presentas un prototipo:", options: ["Solo teoría", "Hacer demostración técnica", "Casa", "Dibujo"], correctAnswer: 1 },
+              { question: "Habilidad clave en la defensa verbal:", options: ["C++", "Síntesis y Oratoria", "Tipeo", "Memoria"], correctAnswer: 1 }
             ]
           }
         ]
@@ -832,26 +669,119 @@ export const calculateLevel = (totalXp) => {
 };
 
 // =======================================================================
-// JUEGOS ARCADE EXTRA
+// JUEGOS ARCADE ESTRATÉGICOS (MEJORADOS)
 // =======================================================================
 export const arcadeGames = [
   {
     id: "game_memory_1",
-    title: "Memoria Tecnológica",
+    title: "Nodos de Red",
     type: "memory",
-    description: "Encuentra los pares entre los conceptos y sus definiciones. Entrena tu mente.",
+    description: "Reconecta los servidores de la empresa emparejando conceptos clave con sus definiciones. Memoriza los íconos.",
     xpReward: 100,
     requiredLessonId: "l1_1", 
     requiredLessonName: "1.1 Introducción al concepto de Tecnologías Emergentes",
     data: [
-      { id: 1, text: "Internet de las Cosas (IoT)", matchId: 101 },
-      { id: 101, text: "Objetos físicos con sensores conectados a internet.", matchId: 1 },
-      { id: 2, text: "Blockchain", matchId: 102 },
-      { id: 102, text: "Libro de contabilidad descentralizado e inmutable.", matchId: 2 },
-      { id: 3, text: "Inteligencia Artificial (IA)", matchId: 103 },
-      { id: 103, text: "Sistemas que emulan inteligencia humana.", matchId: 3 },
-      { id: 4, text: "Machine Learning", matchId: 104 },
-      { id: 104, text: "Sistemas que aprenden a partir de los datos.", matchId: 4 }
+      { id: 1, text: "Internet de las Cosas", icon: "Wifi", matchId: 101 },
+      { id: 101, text: "Sensores físicos a internet.", icon: "Wifi", matchId: 1 },
+      { id: 2, text: "Blockchain", icon: "Link", matchId: 102 },
+      { id: 102, text: "Libro descentralizado inmutable.", icon: "Link", matchId: 2 },
+      { id: 3, text: "IA Generativa", icon: "Sparkles", matchId: 103 },
+      { id: 103, text: "Crea contenido nuevo sintético.", icon: "Sparkles", matchId: 3 },
+      { id: 4, text: "Cloud Computing", icon: "Cloud", matchId: 104 },
+      { id: 104, text: "Procesamiento en servidores remotos.", icon: "Cloud", matchId: 4 }
+    ]
+  },
+  {
+    id: "game_hangman_1",
+    title: "Brecha de Seguridad",
+    type: "hangman",
+    description: "Alerta de intrusión. Adivina la clave en la terminal hacker antes de que los contramedidas destruyan tu conexión.",
+    xpReward: 150,
+    requiredLessonId: "l2_7", 
+    requiredLessonName: "2.7 Aspectos éticos y legales",
+    data: [
+      { word: "CIBERSEGURIDAD", hint: "Protección de sistemas y redes contra ataques." },
+      { word: "ALGORITMO", hint: "Conjunto de pasos lógicos en el código." },
+      { word: "PRIVACIDAD", hint: "Derecho a controlar el uso de tus datos personales." }
+    ]
+  },
+  {
+    id: "game_timeattack_1",
+    title: "Sobrecarga Crítica",
+    type: "timeattack",
+    description: "El núcleo de IA está inestable. Responde rápido para mantener la estabilidad del sistema por encima del 0%.",
+    xpReward: 200,
+    requiredLessonId: "l1_4", 
+    requiredLessonName: "1.4 Impacto, desafíos y futuro",
+    data: [
+      { question: "¿Qué IA crea imágenes desde texto?", correct: "IA Generativa", options: ["IA Generativa", "IoT", "Blockchain", "VR"] },
+      { question: "¿Problema donde no sabemos cómo la IA decide?", correct: "Caja Negra", options: ["Caja Negra", "Pantalla Azul", "Ping Alto", "Hardware"] },
+      { question: "¿Procesamiento de datos cerca del usuario?", correct: "Edge Computing", options: ["Cloud Computing", "Edge Computing", "Mainframe", "Router"] },
+      { question: "¿Tecnología de Bitcoin?", correct: "Blockchain", options: ["Blockchain", "VR", "Machine Learning", "Cloud"] },
+      { question: "¿Dispositivos físicos conectados a internet?", correct: "IoT", options: ["Internet Oscuro", "Internet de las Cosas (IoT)", "Intranet", "Cables LAN"] }
+    ]
+  },
+  {
+    id: "game_sorting_1",
+    title: "Clasificador de Datos",
+    type: "sorting",
+    description: "Acepta o rechaza paquetes de datos para entrenar a tu algoritmo. Evita la basura digital.",
+    xpReward: 150,
+    requiredLessonId: "l4_2", 
+    requiredLessonName: "4.2 Categorías de algoritmos",
+    data: {
+      categories: ["Aprendizaje Supervisado", "Aprendizaje No Supervisado"],
+      items: [
+        { text: "Entrenar usando fotos que ya dicen 'Perro' o 'Gato'.", category: "Aprendizaje Supervisado" },
+        { text: "Buscar patrones ocultos en datos desordenados.", category: "Aprendizaje No Supervisado" },
+        { text: "Predecir precios de casas basado en el historial de ventas pasadas.", category: "Aprendizaje Supervisado" },
+        { text: "Agrupar automáticamente a los clientes de un supermercado por sus gustos.", category: "Aprendizaje No Supervisado" }
+      ]
+    }
+  },
+  {
+    id: "game_prompt_1",
+    title: "Arquitecto de Prompt",
+    type: "prompt",
+    description: "Conecta los nodos de código en el orden lógico correcto para programar una instrucción perfecta.",
+    xpReward: 150,
+    requiredLessonId: "l3_2", 
+    requiredLessonName: "3.2 Aplicación en Inteligencia Artificial Generativa",
+    data: {
+      target: "Actúa como un experto y redacta un informe corto",
+      words: ["Actúa", "como", "un", "experto", "y", "redacta", "un", "informe", "corto"]
+    }
+  },
+  {
+    id: "game_scenario_1",
+    title: "Simulador de CEO",
+    type: "scenario",
+    description: "Toma decisiones críticas. Mantén el equilibrio entre Ética, Presupuesto e Innovación. ¡Si alguna llega a 0, te despiden!",
+    xpReward: 250,
+    requiredLessonId: "l3_6", 
+    requiredLessonName: "3.6 Consideraciones éticas y de gobernanza",
+    data: [
+      {
+        situation: "Un equipo propone vender datos privados de usuarios a terceros. Es altamente rentable pero viola nuestra política de privacidad.",
+        options: [
+          { text: "Rechazar y proteger datos", impacts: { ethics: +20, budget: -15, tech: 0 }, feedback: "Perdimos dinero, pero nuestra reputación y confianza ética subieron." },
+          { text: "Vender en secreto", impacts: { ethics: -40, budget: +30, tech: 0 }, feedback: "Ganamos millones, pero la prensa se enteró. La ética colapsó." }
+        ]
+      },
+      {
+        situation: "Nuestra IA médica ha sido acusada de tener sesgos raciales al diagnosticar pacientes.",
+        options: [
+          { text: "Apagarla y auditarla", impacts: { ethics: +30, budget: -20, tech: -10 }, feedback: "Perdimos terreno tecnológico y dinero, pero evitamos demandas letales." },
+          { text: "Lanzar parche rápido en vivo", impacts: { ethics: -20, budget: +10, tech: -10 }, feedback: "El parche falló. Hubo negligencia y la empresa sufre." }
+        ]
+      },
+      {
+        situation: "La competencia lanzó una IA que roba arte sin pagar derechos. Es muy popular.",
+        options: [
+          { text: "Copiarles para competir", impacts: { ethics: -30, budget: +20, tech: +20 }, feedback: "El avance tecnológico fue brutal, pero recibimos miles de demandas de artistas." },
+          { text: "Crear un modelo ético de pago", impacts: { ethics: +20, budget: -20, tech: +10 }, feedback: "Costó una fortuna programarlo, pero la industria nos ama ahora." }
+        ]
+      }
     ]
   }
 ];

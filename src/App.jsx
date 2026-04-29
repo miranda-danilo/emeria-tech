@@ -15,11 +15,21 @@ export default function App() {
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [currentScreen, setCurrentScreen] = useState('landing'); 
   
-  // Estado crucial para el Docente
   const [isCustomTeacherLogin, setIsCustomTeacherLogin] = useState(false);
 
   useEffect(() => {
     if (!isConfigured) { setLoadingAuth(false); return; }
+
+    // RECUPERACIÓN DE SESIÓN DE DOCENTE (PERSISTENCIA)
+    const storedTeacher = localStorage.getItem('teacherProfile_emeria');
+    if (storedTeacher) {
+      setProfile(JSON.parse(storedTeacher));
+      setIsCustomTeacherLogin(true);
+      setCurrentScreen('dashboard');
+      setLoadingAuth(false);
+      // Omitimos la autenticación anónima si ya hay un docente guardado localmente
+      return; 
+    }
 
     const initAuth = async () => {
       try {
@@ -37,7 +47,6 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
 
-      // Si es un docente, saltamos la lógica de Firebase Auth estándar
       if (isCustomTeacherLogin) {
         setLoadingAuth(false);
         return;
@@ -86,16 +95,17 @@ export default function App() {
     return () => unsubscribe();
   }, [currentScreen, isCustomTeacherLogin]);
 
-  // ESTA ES LA FUNCIÓN QUE FALTABA: Recibe al docente y lo deja entrar
+  // LOGIN DE DOCENTE CON GUARDADO EN LOCALSTORAGE
   const handleTeacherLogin = (teacherProfile) => {
+    localStorage.setItem('teacherProfile_emeria', JSON.stringify(teacherProfile));
     setIsCustomTeacherLogin(true);
     setProfile(teacherProfile);
     setCurrentScreen('dashboard');
   };
 
-  const addExperience = async (points, lessonId) => {
+  const addExperience = async (points, missionId) => {
     if (!isConfigured || !profile) return;
-    if (profile.completedMissions.includes(lessonId)) return; 
+    if (profile.completedMissions.includes(missionId)) return; 
 
     const uidToUpdate = profile.uid || user?.uid;
     if (!uidToUpdate) return;
@@ -104,19 +114,21 @@ export default function App() {
     try {
       await updateDoc(userRef, { 
         totalScore: increment(points),
-        completedMissions: arrayUnion(lessonId)
+        completedMissions: arrayUnion(missionId)
       });
       setProfile(p => ({ 
         ...p, 
         totalScore: p.totalScore + points,
-        completedMissions: [...p.completedMissions, lessonId]
+        completedMissions: [...p.completedMissions, missionId]
       }));
     } catch (error) {
       console.error("Error guardando progreso:", error);
     }
   };
 
+  // CERRAR SESIÓN (LIMPIA EL LOCALSTORAGE DEL DOCENTE)
   const handleLogout = () => { 
+    localStorage.removeItem('teacherProfile_emeria');
     setIsCustomTeacherLogin(false);
     setProfile(null);
     if (isConfigured) signOut(auth); 
@@ -153,7 +165,6 @@ export default function App() {
     }
   }
   
-  // AQUÍ LE PASAMOS LA FUNCIÓN AL AUTHSCREEN (onTeacherLogin)
   if (currentScreen === 'auth') {
     return <AuthScreen onBack={() => setCurrentScreen('landing')} onTeacherLogin={handleTeacherLogin} />;
   }
@@ -170,6 +181,10 @@ function OnboardingScreen({ profile, onComplete, onLogout }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availableCourses = [
+    "TI - Primer Semestre (Paralelo A)",
+    "TI - Primer Semestre (Paralelo B)",
+    "TI - Segundo Semestre (Paralelo A)",
+    "TI - Segundo Semestre (Paralelo B)",
     "Octavo A",
     "Octavo B",
     "Octavo C",
@@ -197,7 +212,7 @@ function OnboardingScreen({ profile, onComplete, onLogout }) {
         <h1 className="text-3xl font-black text-white text-center mb-2">¡Bienvenido a EMERIA!</h1>
         <p className="text-slate-400 text-center mb-10">Hola <span className="text-white font-bold">{profile?.name}</span>. Para personalizar tu experiencia y asignarte a un ranking, por favor selecciona tu curso actual.</p>
 
-        <div className="space-y-4 mb-10">
+        <div className="space-y-4 mb-10 max-h-60 overflow-y-auto pr-2">
           {availableCourses.map((course) => {
             const isSelected = selectedCourse === course;
             return (

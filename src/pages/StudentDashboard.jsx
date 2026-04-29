@@ -1,50 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Target, Trophy, LogOut, ChevronRight, Star, Shield, Zap, Lock, BookOpen, ArrowLeft, CheckCircle2, XCircle, PlayCircle, RotateCcw, Gamepad2, BrainCircuit, AlertOctagon } from 'lucide-react';
+import { LayoutDashboard, Target, Trophy, LogOut, ChevronRight, Star, Shield, Zap, Lock, BookOpen, ArrowLeft, CheckCircle2, PlayCircle, RotateCcw, Gamepad2, BrainCircuit, Globe, Users } from 'lucide-react';
 import { db, appId } from '../firebase/config';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { arcadeGames } from '../data/silabo'; 
 
-// ============================================================================
-// SISTEMA DE EFECTOS DE SONIDO (Web Audio API)
-// ============================================================================
+// IMPORTAR EL MOTOR DE JUEGOS
+import { MemoryGameView, HangmanGameView, TimeAttackGameView, SortingGameView, PromptGameView, ScenarioGameView } from '../components/ArcadeGames';
+
 const playSound = (type) => {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return;
   const ctx = new AudioContext();
   const osc = ctx.createOscillator();
   const gainNode = ctx.createGain();
-
-  osc.connect(gainNode);
-  gainNode.connect(ctx.destination);
-
+  osc.connect(gainNode); gainNode.connect(ctx.destination);
   if (type === 'success') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, ctx.currentTime); 
-    osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1); 
-    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2); 
+    osc.type = 'sine'; osc.frequency.setValueAtTime(440, ctx.currentTime); 
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); 
     gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
   } else if (type === 'error') {
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(150, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.3);
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.3);
     gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
   } else if (type === 'click') {
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
     gainNode.gain.setValueAtTime(0.05, ctx.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
   }
 };
 
-// Extractor de ID de YouTube
 const getYouTubeId = (url) => {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -52,14 +40,16 @@ const getYouTubeId = (url) => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
-
 export default function StudentDashboard({ user, profile, onLogout, addExperience }) {
   const [activeTab, setActiveTab] = useState('inicio');
   const [leaderboard, setLeaderboard] = useState([]);
   const [silaboFirestore, setSilaboFirestore] = useState([]); 
+  const [juegosFirestore, setJuegosFirestore] = useState([]); // JUEGOS EN LA NUBE
   const [expandedUnit, setExpandedUnit] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeGame, setActiveGame] = useState(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false); 
+  const [rankingFilter, setRankingFilter] = useState('general');
 
   const currentLevel = Math.floor((profile?.totalScore || 0) / 100) + 1;
   const xpForNextLevel = currentLevel * 100;
@@ -67,6 +57,7 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
   const completedMissions = profile?.completedMissions || [];
 
   useEffect(() => {
+    // Escuchar Usuarios
     const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'usuarios');
     const qUsers = query(usersRef, orderBy('totalScore', 'desc'));
     const unsubUsers = onSnapshot(qUsers, (snapshot) => {
@@ -74,19 +65,27 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
       setLeaderboard(topUsers);
     });
 
+    // Escuchar Sílabo
     const silaboRef = collection(db, 'artifacts', appId, 'public', 'data', 'silabo');
     const unsubSilabo = onSnapshot(silaboRef, (snapshot) => {
       if (!snapshot.empty) {
         const data = snapshot.docs.map(doc => doc.data());
         data.sort((a, b) => a.id.localeCompare(b.id));
         setSilaboFirestore(data);
-        if (data.length > 0 && !expandedUnit) {
-           setExpandedUnit(data[0].id);
-        }
+        if (data.length > 0 && !expandedUnit) setExpandedUnit(data[0].id);
       }
     });
 
-    return () => { unsubUsers(); unsubSilabo(); };
+    // Escuchar Juegos
+    const juegosRef = collection(db, 'artifacts', appId, 'public', 'data', 'juegos');
+    const unsubJuegos = onSnapshot(juegosRef, (snapshot) => {
+      if (!snapshot.empty) {
+        const data = snapshot.docs.map(doc => doc.data());
+        setJuegosFirestore(data);
+      }
+    });
+
+    return () => { unsubUsers(); unsubSilabo(); unsubJuegos(); };
   }, []);
 
   const getTotalLessonsInUnit = (unit) => {
@@ -107,7 +106,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
     });
     return allLessons;
   };
-  
   const flatLessonsList = getFlatLessons();
 
   const handleLessonComplete = (xpGained, missionId) => {
@@ -129,23 +127,40 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
     );
   }
 
+  // RENDERIZADO DINÁMICO DE LOS JUEGOS ARCADE
   if (activeGame) {
     const isAlreadyCompleted = completedMissions.includes(activeGame.id);
-    if (activeGame.type === 'memory') {
-      return (
-        <MemoryGameView 
-          game={activeGame} 
-          onBack={() => { playSound('click'); setActiveGame(null); }} 
-          onComplete={(xp) => handleLessonComplete(xp, activeGame.id)}
-          isAlreadyCompleted={isAlreadyCompleted}
-        />
-      );
+    const gameProps = {
+      game: activeGame,
+      onBack: () => { 
+        playSound('click'); 
+        setActiveGame(null); 
+        setIsPreviewMode(false); 
+      },
+      onComplete: (xp) => {
+        if (isPreviewMode) {
+          playSound('click'); setActiveGame(null); setIsPreviewMode(false);
+        } else {
+          handleLessonComplete(xp, activeGame.id);
+        }
+      },
+      isAlreadyCompleted,
+      isPreviewMode 
+    };
+
+    switch (activeGame.type) {
+      case 'memory': return <MemoryGameView {...gameProps} />;
+      case 'hangman': return <HangmanGameView {...gameProps} />;
+      case 'timeattack': return <TimeAttackGameView {...gameProps} />;
+      case 'sorting': return <SortingGameView {...gameProps} />;
+      case 'prompt': return <PromptGameView {...gameProps} />;
+      case 'scenario': return <ScenarioGameView {...gameProps} />;
+      default: return null;
     }
   }
 
   return (
     <div className="min-h-screen bg-[#050B14] text-slate-300 flex overflow-hidden font-sans">
-      {/* SIDEBAR */}
       <aside className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col justify-between hidden md:flex backdrop-blur-md">
         <div>
           <div className="p-6 border-b border-white/5 flex items-center gap-3">
@@ -177,7 +192,6 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL */}
       <main className="flex-1 flex flex-col h-screen overflow-y-auto relative">
         <header className="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 flex justify-between items-center sticky top-0 z-50">
            <div className="flex items-center gap-2"><Zap className="text-blue-500 w-6 h-6" /><span className="text-white font-bold text-lg">EMERIA</span></div>
@@ -185,14 +199,13 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
         </header>
 
         <div className="p-4 md:p-8 max-w-5xl mx-auto w-full relative z-10">
-          <div className="md:hidden grid grid-cols-4 bg-slate-900/50 p-1 rounded-xl mb-6 border border-white/5">
+          <div className="md:hidden grid grid-cols-4 gap-1 bg-slate-900/50 p-1 rounded-xl mb-6 border border-white/5">
              <MobileTabBtn label="Inicio" isActive={activeTab==='inicio'} onClick={()=>setActiveTab('inicio')} />
              <MobileTabBtn label="Misiones" isActive={activeTab==='misiones'} onClick={()=>setActiveTab('misiones')} />
              <MobileTabBtn label="Juegos" isActive={activeTab==='laboratorio'} onClick={()=>setActiveTab('laboratorio')} />
              <MobileTabBtn label="Ranking" isActive={activeTab==='ranking'} onClick={()=>setActiveTab('ranking')} />
           </div>
 
-          {/* CONTENIDO: INICIO */}
           {activeTab === 'inicio' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="bg-gradient-to-br from-blue-900/40 to-slate-900/80 border border-blue-500/20 rounded-3xl p-8 relative overflow-hidden">
@@ -219,13 +232,12 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard icon={<Star className="w-6 h-6 text-yellow-400" />} title="XP Total" value={profile?.totalScore || 0} />
                 <StatCard icon={<Shield className="w-6 h-6 text-blue-400" />} title="Nivel" value={currentLevel} />
-                <StatCard icon={<BookOpen className="w-6 h-6 text-green-400" />} title="Misiones" value={`${completedMissions.length}/${flatLessonsList.length}`} />
+                <StatCard icon={<BookOpen className="w-6 h-6 text-green-400" />} title="Misiones" value={`${completedMissions.filter(id => flatLessonsList.some(l => l.id === id)).length}/${flatLessonsList.length}`} />
                 <StatCard icon={<Trophy className="w-6 h-6 text-purple-400" />} title="Rango" value={`#${leaderboard.findIndex(u => u.id === profile?.uid) + 1 || '-'}`} />
               </div>
             </div>
           )}
 
-          {/* CONTENIDO: MISIONES */}
           {activeTab === 'misiones' && (
              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="flex items-center gap-3 mb-8">
@@ -238,88 +250,67 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
                 </div>
               </div>
 
-              {silaboFirestore.length === 0 ? (
-                <div className="text-center p-10 bg-slate-900/50 rounded-2xl border border-white/5">
-                  <Cpu className="w-10 h-10 text-slate-500 mx-auto mb-4 animate-pulse" />
-                  <p className="text-slate-400">Cargando misiones desde la base de datos...</p>
-                  <p className="text-xs text-slate-500 mt-2">Si este mensaje persiste, contacta al docente para que inicialice el sílabo.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {silaboFirestore.map((unidad, index) => (
-                    <div key={unidad.id || index} className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden">
-                      <button onClick={() => { playSound('click'); setExpandedUnit(expandedUnit === unidad.id ? null : unidad.id); }} className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${expandedUnit === unidad.id ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
-                            {index + 1}
-                          </div>
-                          <div className="text-left max-w-[200px] sm:max-w-md md:max-w-lg lg:max-w-2xl">
-                            <h3 className="text-white font-bold truncate">{unidad.title}</h3>
-                            <p className="text-slate-500 text-xs mt-1">{getTotalLessonsInUnit(unidad)} misiones</p>
-                          </div>
+              <div className="space-y-4">
+                {silaboFirestore.map((unidad, index) => (
+                  <div key={unidad.id || index} className="bg-slate-900/50 border border-white/5 rounded-2xl overflow-hidden">
+                    <button onClick={() => { playSound('click'); setExpandedUnit(expandedUnit === unidad.id ? null : unidad.id); }} className="w-full flex items-center justify-between p-6 hover:bg-white/5 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${expandedUnit === unidad.id ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+                          {index + 1}
                         </div>
-                        <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform ${expandedUnit === unidad.id ? 'rotate-90 text-blue-400' : ''}`} />
-                      </button>
-                      
-                      {expandedUnit === unidad.id && unidad.sessions && (
-                        <div className="bg-slate-950/80 p-6 border-t border-white/5 space-y-6">
-                          <p className="text-sm text-slate-400 italic mb-4">{unidad.description}</p>
-                          
-                          {unidad.sessions.map((session, sIdx) => (
-                            <div key={session.id || sIdx} className="space-y-3">
-                              <h4 className="text-blue-400 font-bold text-sm tracking-wide uppercase border-b border-white/10 pb-2">{session.name}</h4>
-                              
-                              {session.lessons && session.lessons.map((lesson) => {
-                                const lessonIndex = flatLessonsList.findIndex(l => l.id === lesson.id);
-                                const isFirstLesson = lessonIndex === 0;
-                                const previousLesson = lessonIndex > 0 ? flatLessonsList[lessonIndex - 1] : null;
-                                const hasCompletedPrevious = previousLesson ? completedMissions.includes(previousLesson.id) : false;
-                                const isUnlocked = isFirstLesson || hasCompletedPrevious || lesson.isUnlocked;
-                                const isCompleted = completedMissions.includes(lesson.id);
+                        <div className="text-left max-w-[200px] sm:max-w-md md:max-w-lg lg:max-w-2xl">
+                          <h3 className="text-white font-bold truncate">{unidad.title}</h3>
+                          <p className="text-slate-500 text-xs mt-1">{getTotalLessonsInUnit(unidad)} misiones</p>
+                        </div>
+                      </div>
+                      <ChevronRight className={`w-5 h-5 text-slate-500 transition-transform ${expandedUnit === unidad.id ? 'rotate-90 text-blue-400' : ''}`} />
+                    </button>
+                    
+                    {expandedUnit === unidad.id && unidad.sessions && (
+                      <div className="bg-slate-950/80 p-6 border-t border-white/5 space-y-6">
+                        <p className="text-sm text-slate-400 italic mb-4">{unidad.description}</p>
+                        {unidad.sessions.map((session, sIdx) => (
+                          <div key={session.id || sIdx} className="space-y-3">
+                            <h4 className="text-blue-400 font-bold text-sm tracking-wide uppercase border-b border-white/10 pb-2">{session.name}</h4>
+                            {session.lessons && session.lessons.map((lesson) => {
+                              const lessonIndex = flatLessonsList.findIndex(l => l.id === lesson.id);
+                              const isFirstLesson = lessonIndex === 0;
+                              const previousLesson = lessonIndex > 0 ? flatLessonsList[lessonIndex - 1] : null;
+                              const hasCompletedPrevious = previousLesson ? completedMissions.includes(previousLesson.id) : false;
+                              const isUnlocked = isFirstLesson || hasCompletedPrevious || lesson.isUnlocked;
+                              const isCompleted = completedMissions.includes(lesson.id);
 
-                                let cardStyle = "bg-slate-900/50 border-white/5 opacity-75";
-                                let iconStyle = "bg-slate-800 text-slate-600";
-                                let icon = <Lock className="w-4 h-4" />;
-                                
-                                if (isCompleted) {
-                                  cardStyle = "bg-slate-900/80 border-green-500/30";
-                                  iconStyle = "bg-green-500/20 text-green-400";
-                                  icon = <CheckCircle2 className="w-4 h-4" />;
-                                } else if (isUnlocked) {
-                                  cardStyle = "bg-slate-900 border-blue-500/30 hover:border-blue-400/50 shadow-[inset_0_0_20px_rgba(37,99,235,0.05)]";
-                                  iconStyle = "bg-blue-500/20 text-blue-400";
-                                  icon = <PlayCircle className="w-4 h-4" />;
-                                }
+                              let cardStyle = "bg-slate-900/50 border-white/5 opacity-75";
+                              let iconStyle = "bg-slate-800 text-slate-600";
+                              let icon = <Lock className="w-4 h-4" />;
+                              if (isCompleted) { cardStyle = "bg-slate-900/80 border-green-500/30"; iconStyle = "bg-green-500/20 text-green-400"; icon = <CheckCircle2 className="w-4 h-4" />; } 
+                              else if (isUnlocked) { cardStyle = "bg-slate-900 border-blue-500/30 shadow-[inset_0_0_20px_rgba(37,99,235,0.05)]"; iconStyle = "bg-blue-500/20 text-blue-400"; icon = <PlayCircle className="w-4 h-4" />; }
 
-                                return (
-                                  <div key={lesson.id} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl border transition-all gap-4 ${cardStyle}`}>
-                                    <div className="flex items-center gap-4">
-                                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${iconStyle}`}>{icon}</div>
-                                       <div>
-                                         <span className={`block text-sm font-medium ${isUnlocked || isCompleted ? 'text-slate-200' : 'text-slate-500'}`}>{lesson.title}</span>
-                                         <span className={`text-[10px] font-bold uppercase tracking-wider ${isCompleted ? 'text-green-500' : 'text-yellow-500'}`}>
-                                            {isCompleted ? 'Completado' : `+${lesson.xpReward || 0} XP`}
-                                         </span>
-                                       </div>
-                                    </div>
-                                    <button onClick={() => { playSound('click'); setActiveLesson(lesson); }} disabled={!isUnlocked && !isCompleted} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isCompleted ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : isUnlocked ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'}`}>
-                                      {isCompleted ? <span className="flex items-center gap-1"><RotateCcw className="w-4 h-4"/> Repasar</span> : isUnlocked ? 'Iniciar Misión' : 'Bloqueado'}
-                                    </button>
+                              return (
+                                <div key={lesson.id} className={`flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl border transition-all gap-4 ${cardStyle}`}>
+                                  <div className="flex items-center gap-4">
+                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${iconStyle}`}>{icon}</div>
+                                     <div>
+                                       <span className={`block text-sm font-medium ${isUnlocked || isCompleted ? 'text-slate-200' : 'text-slate-500'}`}>{lesson.title}</span>
+                                       <span className={`text-[10px] font-bold uppercase tracking-wider ${isCompleted ? 'text-green-500' : 'text-yellow-500'}`}>{isCompleted ? 'Completado' : `+${lesson.xpReward || 0} XP`}</span>
+                                     </div>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                                  <button onClick={() => { playSound('click'); setActiveLesson(lesson); }} disabled={!isUnlocked && !isCompleted} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isCompleted ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : isUnlocked ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'}`}>
+                                    {isCompleted ? <span className="flex items-center gap-1"><RotateCcw className="w-4 h-4"/> Repasar</span> : isUnlocked ? 'Iniciar Misión' : 'Bloqueado'}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
              </div>
           )}
 
-          {/* CONTENIDO: LABORATORIO / ARCADE */}
           {activeTab === 'laboratorio' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="flex items-center gap-3 mb-8">
@@ -328,72 +319,84 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-white">Laboratorio Arcade</h2>
-                  <p className="text-slate-400 text-sm">Entrena tus habilidades y gana experiencia extra.</p>
+                  <p className="text-slate-400 text-sm">Entrena tus habilidades y gana experiencia extra con estos {juegosFirestore.length} simuladores.</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {arcadeGames.map((game) => {
-                  const isCompleted = completedMissions.includes(game.id);
-                  const hasRequiredLesson = completedMissions.includes(game.requiredLessonId);
-                  const isUnlocked = hasRequiredLesson || isCompleted;
+              {juegosFirestore.length === 0 ? (
+                <div className="text-center p-10 bg-slate-900/50 rounded-2xl border border-white/5 text-slate-400">
+                  Aún no hay simuladores disponibles en la base de datos.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {juegosFirestore.map((game) => {
+                    const isCompleted = completedMissions.includes(game.id);
+                    // Si requiredLessonId existe y no está vacío, verificar si está completado. Si no existe, está desbloqueado por defecto.
+                    const isUnlocked = !game.requiredLessonId || completedMissions.includes(game.requiredLessonId) || isCompleted;
 
-                  return (
-                    <div key={game.id} className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 flex flex-col relative overflow-hidden group">
-                      {!isUnlocked && (
-                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-6 text-center">
-                           <Lock className="w-10 h-10 text-slate-600 mb-3" />
-                           <p className="text-white font-bold mb-1">Juego Bloqueado</p>
-                           <p className="text-xs text-slate-400">Debes completar la misión:<br/> <span className="text-blue-400 font-bold">{game.requiredLessonName}</span></p>
+                    return (
+                      <div key={game.id} className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 flex flex-col relative overflow-hidden group">
+                        {!isUnlocked && (
+                          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-6 text-center">
+                             <Lock className="w-10 h-10 text-slate-600 mb-3" />
+                             <p className="text-white font-bold mb-1">Simulador Bloqueado</p>
+                             <p className="text-xs text-slate-400 mb-4">Debes completar la misión:<br/> <span className="text-blue-400 font-bold">{game.requiredLessonName}</span></p>
+                             <button onClick={(e) => { e.stopPropagation(); playSound('click'); setIsPreviewMode(true); setActiveGame(game); }} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-bold border border-white/10 transition-colors shadow-lg">
+                               Jugar Vista Previa (Sin XP)
+                             </button>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-pink-500/50 transition-colors">
+                            <BrainCircuit className="w-6 h-6 text-pink-400" />
+                          </div>
+                          <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isCompleted ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
+                             {isCompleted ? <CheckCircle2 className="w-3 h-3"/> : <Star className="w-3 h-3 fill-current"/>}
+                             {isCompleted ? 'Completado' : `+${game.xpReward} XP`}
+                          </div>
                         </div>
-                      )}
-                      
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center border border-white/10 group-hover:border-pink-500/50 transition-colors">
-                          <BrainCircuit className="w-6 h-6 text-pink-400" />
-                        </div>
-                        <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${isCompleted ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
-                           {isCompleted ? <CheckCircle2 className="w-3 h-3"/> : <Star className="w-3 h-3 fill-current"/>}
-                           {isCompleted ? 'Completado' : `+${game.xpReward} XP`}
-                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">{game.title}</h3>
+                        <p className="text-slate-400 text-sm mb-6 flex-1">{game.description}</p>
+                        <button onClick={() => { playSound('click'); setIsPreviewMode(false); setActiveGame(game); }} disabled={!isUnlocked} className={`w-full py-3 rounded-xl font-bold transition-all ${isCompleted ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-pink-600 text-white hover:bg-pink-500 shadow-lg shadow-pink-600/20'}`}>
+                          {isCompleted ? 'Jugar de Nuevo' : 'Iniciar Simulador'}
+                        </button>
                       </div>
-                      
-                      <h3 className="text-xl font-bold text-white mb-2">{game.title}</h3>
-                      <p className="text-slate-400 text-sm mb-6 flex-1">{game.description}</p>
-                      
-                      <button onClick={() => { playSound('click'); setActiveGame(game); }} disabled={!isUnlocked} className={`w-full py-3 rounded-xl font-bold transition-all ${isCompleted ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-pink-600 text-white hover:bg-pink-500 shadow-lg shadow-pink-600/20'}`}>
-                        {isCompleted ? 'Jugar de Nuevo' : 'Jugar Ahora'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
-          {/* CONTENIDO: RANKING */}
           {activeTab === 'ranking' && (
              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-               <div className="flex items-center gap-3 mb-8">
-                <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
-                  <Trophy className="text-purple-400 w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-white">Salón de la Fama</h2>
-                  <p className="text-slate-400 text-sm">Compite con tus compañeros de curso.</p>
-                </div>
+               <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+                 <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20">
+                    <Trophy className="text-purple-400 w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-white">Salón de la Fama</h2>
+                    <p className="text-slate-400 text-sm">Compite con tus compañeros.</p>
+                  </div>
+                 </div>
+                 <div className="flex bg-slate-900 border border-white/5 p-1 rounded-xl w-full sm:w-auto shadow-lg">
+                    <button onClick={() => { playSound('click'); setRankingFilter('general'); }} className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-colors ${rankingFilter === 'general' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}><Globe className="w-4 h-4" /> General</button>
+                    <button onClick={() => { playSound('click'); setRankingFilter('curso'); }} disabled={!profile?.course} title={!profile?.course ? "No tienes un curso asignado" : ""} className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-colors ${!profile?.course ? 'opacity-50 cursor-not-allowed' : rankingFilter === 'curso' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}><Users className="w-4 h-4" /> Mi Curso</button>
+                 </div>
               </div>
-              <div className="bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden">
-                <div className="p-6 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+
+              <div className="bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-white/5 grid grid-cols-12 gap-4 text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-900">
                   <div className="col-span-2 text-center">Rango</div>
                   <div className="col-span-7">Estudiante</div>
                   <div className="col-span-3 text-right">XP</div>
                 </div>
                 <div className="divide-y divide-white/5">
-                  {leaderboard.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500">Sin datos.</div>
-                  ) : (
-                    leaderboard.map((userDoc, index) => {
+                  {(() => {
+                    const filteredLeaderboard = rankingFilter === 'curso' && profile?.course ? leaderboard.filter(u => u.course === profile.course) : leaderboard;
+                    if (filteredLeaderboard.length === 0) return <div className="p-8 text-center text-slate-500">No hay estudiantes en esta categoría aún.</div>;
+                    return filteredLeaderboard.map((userDoc, index) => {
                       const isMe = userDoc.id === profile?.uid;
                       let rankClass = "text-slate-400 font-bold text-lg";
                       if (index === 0) rankClass = "text-yellow-400 font-black text-2xl drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]";
@@ -404,52 +407,31 @@ export default function StudentDashboard({ user, profile, onLogout, addExperienc
                         <div key={userDoc.id} className={`p-4 grid grid-cols-12 gap-4 items-center transition-colors ${isMe ? 'bg-blue-900/20 border-l-4 border-blue-500' : 'hover:bg-white/5 border-l-4 border-transparent'}`}>
                           <div className={`col-span-2 text-center ${rankClass}`}>#{index + 1}</div>
                           <div className="col-span-7 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-400">
-                               {userDoc.name ? userDoc.name.charAt(0).toUpperCase() : '?'}
-                            </div>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isMe ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>{userDoc.name ? userDoc.name.charAt(0).toUpperCase() : '?'}</div>
                             <div>
                               <p className={`font-bold ${isMe ? 'text-blue-400' : 'text-slate-200'}`}>{userDoc.name || 'Anónimo'} {isMe && '(Tú)'}</p>
-                              <p className="text-xs text-slate-500">{userDoc.course || 'Estudiante'}</p>
+                              <p className="text-xs text-slate-500 truncate">{userDoc.course || 'Estudiante'}</p>
                             </div>
                           </div>
-                          <div className="col-span-3 text-right font-mono font-bold text-yellow-400">{userDoc.totalScore || 0} XP</div>
+                          <div className={`col-span-3 text-right font-mono font-bold ${isMe ? 'text-blue-400' : 'text-yellow-400'}`}>{userDoc.totalScore || 0} XP</div>
                         </div>
                       );
-                    })
-                  )}
+                    });
+                  })()}
                 </div>
               </div>
              </div>
           )}
-
         </div>
       </main>
     </div>
   );
 }
 
-// ----------------------------------------------------------------------
-// SUBCOMPONENTES DE UI
-// ----------------------------------------------------------------------
-function SidebarBtn({ icon, label, isActive, onClick }) {
-  return (
-    <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}>
-      <span className="w-5 h-5">{icon}</span> {label}
-    </button>
-  );
-}
-
-function MobileTabBtn({ label, isActive, onClick }) {
-  return (
-    <button onClick={onClick} className={`flex-1 py-2 text-xs font-bold rounded-lg truncate px-1 ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400'}`}>{label}</button>
-  );
-}
-
+function SidebarBtn({ icon, label, isActive, onClick }) { return ( <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}> <span className="w-5 h-5">{icon}</span> {label} </button> ); }
+function MobileTabBtn({ label, isActive, onClick }) { return ( <button onClick={onClick} className={`flex-1 py-2 text-xs font-bold rounded-lg truncate px-1 transition-colors ${isActive ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>{label}</button> ); }
 function StatCard({ icon, title, value }) { return ( <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-white/10 transition-colors"><div className="mb-2">{icon}</div><p className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">{title}</p><p className="text-xl font-black text-white">{value}</p></div> ); }
 
-// ----------------------------------------------------------------------
-// VISTA INMERSIVA: LECCIÓN TEÓRICA Y QUIZ 
-// ----------------------------------------------------------------------
 function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted }) {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -465,12 +447,10 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
       <div className="min-h-screen bg-[#050B14] flex flex-col items-center justify-center p-6 text-center">
         <Target className="w-16 h-16 text-blue-500 mb-4 animate-bounce" />
         <h2 className="text-2xl font-bold text-white mb-2">Misión: {lesson.title}</h2>
-        {isAlreadyCompleted ? <p className="text-green-400 mb-8 max-w-md font-bold">Ya completaste esta tarea. ¡Buen trabajo!</p> : <p className="text-slate-400 mb-8 max-w-md">Lee el documento adjunto o completa la tarea asignada para continuar.</p>}
+        <p className="text-slate-400 mb-8 max-w-md">Lee el documento adjunto o completa la tarea asignada.</p>
         <div className="flex gap-4">
           <button onClick={onBack} className="px-6 py-3 rounded-xl font-bold text-slate-300 bg-slate-800 hover:bg-slate-700">Volver</button>
-          {!isAlreadyCompleted && (
-            <button onClick={() => { playSound('success'); onComplete(lesson.xpReward); }} className="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500">Completar (+{lesson.xpReward} XP)</button>
-          )}
+          {!isAlreadyCompleted && ( <button onClick={() => { playSound('success'); onComplete(lesson.xpReward); }} className="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500">Completar (+{lesson.xpReward} XP)</button> )}
         </div>
       </div>
     );
@@ -481,31 +461,16 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
   const handleCheckAnswer = () => {
     if (selectedOption === null) return;
     setIsAnswerChecked(true);
-    if (selectedOption === currentQuestion.correctAnswer) {
-       playSound('success');
-       setQuizScore(prev => prev + 1);
-    } else {
-       playSound('error');
-    }
+    if (selectedOption === currentQuestion.correctAnswer) { setQuizScore(prev => prev + 1); playSound('success'); } 
+    else { playSound('error'); }
   };
 
   const handleNextQuestion = () => {
-    playSound('click');
-    if (currentQuizIndex < lesson.quiz.length - 1) {
-      setCurrentQuizIndex(prev => prev + 1); setSelectedOption(null); setIsAnswerChecked(false);
-    } else setIsFinished(true);
+    if (currentQuizIndex < lesson.quiz.length - 1) { setCurrentQuizIndex(prev => prev + 1); setSelectedOption(null); setIsAnswerChecked(false); } 
+    else setIsFinished(true);
   };
 
-  const handleRetryQuiz = () => {
-    playSound('click');
-    setCurrentQuizIndex(0);
-    setQuizScore(0);
-    setSelectedOption(null);
-    setIsAnswerChecked(false);
-    setIsFinished(false);
-  };
-
-  // NUEVA LÓGICA: Exigir 100% de aciertos para ganar XP
+  const handleRetryQuiz = () => { playSound('click'); setCurrentQuizIndex(0); setQuizScore(0); setSelectedOption(null); setIsAnswerChecked(false); setIsFinished(false); };
   const perfectScore = hasQuiz ? (quizScore === lesson.quiz.length) : true;
   const passed = isAlreadyCompleted || perfectScore;
 
@@ -519,46 +484,20 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
             <h2 className="text-white font-bold truncate max-w-sm">{lesson.title}</h2>
           </div>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isAlreadyCompleted ? 'bg-green-500/10 border-green-500/20' : 'bg-yellow-500/10 border-yellow-500/20'}`}>
-          {isAlreadyCompleted ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Star className="w-4 h-4 text-yellow-400 fill-current" />}
-          <span className={`text-sm font-bold ${isAlreadyCompleted ? 'text-green-400' : 'text-yellow-400'}`}>{isAlreadyCompleted ? 'Completada' : `Recompensa: ${lesson.xpReward || 0} XP`}</span>
-        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="max-w-3xl mx-auto space-y-12 pb-24">
-          
           {hasContent && !isFinished && (
             <div className="bg-slate-900/50 border border-white/5 rounded-3xl p-6 md:p-10 shadow-2xl space-y-6">
                {lesson.content.map((block, idx) => {
                  if (block.type === 'subtitle') return <h3 key={idx} className="text-xl md:text-2xl font-bold text-white border-b border-white/10 pb-2 mt-8">{block.value}</h3>;
                  if (block.type === 'text') return <p key={idx} className="text-slate-300 leading-relaxed text-lg">{block.value}</p>;
                  if (block.type === 'list') return <ul key={idx} className="space-y-3 bg-slate-950/50 p-6 rounded-xl border border-white/5">{block.items.map((item, i) => (<li key={i} className="flex gap-3 text-slate-300 leading-relaxed"><CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" /><span>{item}</span></li>))}</ul>;
-                 
                  if (block.type === 'youtube') {
                    const videoId = getYouTubeId(block.url);
-                   return (
-                     <div key={idx} className="w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-white/10 relative shadow-lg my-6 group">
-                        {videoId ? (
-                          <iframe
-                            className="w-full h-full absolute top-0 left-0"
-                            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          ></iframe>
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-4 text-center">
-                            <Youtube className="w-12 h-12 mb-3 opacity-30 text-red-500" />
-                            <p className="text-sm font-medium">Video no disponible</p>
-                            <p className="text-xs mt-1">El enlace de YouTube proporcionado no es válido.</p>
-                          </div>
-                        )}
-                     </div>
-                   );
+                   return videoId ? <div key={idx} className="w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden border border-white/10 relative shadow-lg my-6"><iframe className="w-full h-full absolute top-0 left-0" src={`https://www.youtube.com/embed/${videoId}?rel=0`} title="YouTube" frameBorder="0" allowFullScreen></iframe></div> : null;
                  }
-                 
                  return null;
                })}
             </div>
@@ -566,191 +505,34 @@ function LessonImmersiveView({ lesson, onBack, onComplete, isAlreadyCompleted })
 
           {hasQuiz && !isFinished && (
             <div className="bg-gradient-to-b from-blue-900/20 to-slate-900/50 border border-blue-500/30 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
-               <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3"><Zap className="w-6 h-6 text-yellow-400" /><h3 className="text-xl font-black text-white uppercase tracking-wider">Reto de Conocimiento</h3></div>
-                  <span className="text-xs font-bold text-red-400 bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 hidden sm:block">Acierto 100% Obligatorio</span>
-               </div>
-               
-               <div className="mb-8">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-bold"><span>Pregunta {currentQuizIndex + 1} de {lesson.quiz.length}</span></div>
-                 <div className="w-full bg-slate-950 rounded-full h-2"><div className="bg-blue-500 h-2 rounded-full transition-all" style={{width: `${((currentQuizIndex + 1) / lesson.quiz.length) * 100}%`}}></div></div>
-               </div>
                <p className="text-xl md:text-2xl text-white font-medium mb-8 leading-tight">{currentQuestion.question}</p>
                <div className="space-y-3">
                  {currentQuestion.options.map((option, idx) => {
-                   let cardClass = "bg-slate-800/50 border-white/10 hover:border-blue-500/50 text-slate-300";
+                   let cardClass = "bg-slate-800/50 border-white/10 text-slate-300";
                    if (isAnswerChecked) {
-                     if (idx === currentQuestion.correctAnswer) cardClass = "bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_15px_rgba(34,197,94,0.2)]"; 
+                     if (idx === currentQuestion.correctAnswer) cardClass = "bg-green-500/20 border-green-500 text-green-300"; 
                      else if (idx === selectedOption) cardClass = "bg-red-500/20 border-red-500 text-red-300"; 
-                     else cardClass = "bg-slate-900/30 border-white/5 text-slate-500 opacity-50"; 
-                   } else if (selectedOption === idx) cardClass = "bg-blue-600 border-blue-400 text-white shadow-lg"; 
-                   
-                   return (
-                     <button key={idx} disabled={isAnswerChecked} onClick={() => { playSound('click'); setSelectedOption(idx); }} className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium flex justify-between items-center ${cardClass}`}>
-                       <span>{option}</span>
-                       {isAnswerChecked && idx === currentQuestion.correctAnswer && <CheckCircle2 className="w-5 h-5 text-green-400" />}
-                       {isAnswerChecked && selectedOption === idx && idx !== currentQuestion.correctAnswer && <XCircle className="w-5 h-5 text-red-400" />}
-                     </button>
-                   );
+                   } else if (selectedOption === idx) cardClass = "bg-blue-600 border-blue-400 text-white"; 
+                   return <button key={idx} disabled={isAnswerChecked} onClick={() => { playSound('click'); setSelectedOption(idx); }} className={`w-full text-left p-5 rounded-xl border-2 transition-all font-medium ${cardClass}`}>{option}</button>;
                  })}
                </div>
                <div className="mt-8 flex justify-end">
-                 {!isAnswerChecked ? <button onClick={handleCheckAnswer} disabled={selectedOption === null} className={`px-8 py-3 rounded-xl font-bold transition-all ${selectedOption !== null ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)]' : 'bg-slate-800 text-slate-500 cursor-not-allowed'}`}>Verificar</button> : <button onClick={handleNextQuestion} className="px-8 py-3 rounded-xl font-bold bg-white text-slate-900 hover:bg-slate-200 transition-all flex items-center gap-2">{currentQuizIndex < lesson.quiz.length - 1 ? 'Siguiente' : 'Finalizar Reto'} <ChevronRight className="w-5 h-5" /></button>}
+                 {!isAnswerChecked ? <button onClick={handleCheckAnswer} disabled={selectedOption === null} className="px-8 py-3 rounded-xl font-bold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50">Verificar</button> : <button onClick={handleNextQuestion} className="px-8 py-3 rounded-xl font-bold bg-white text-slate-900">Siguiente</button>}
                </div>
             </div>
           )}
 
           {isFinished && (
-            <div className={`bg-slate-900/80 border rounded-3xl p-10 text-center max-w-lg mx-auto animate-in zoom-in duration-500 ${!passed ? 'border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.1)]' : 'border-blue-500/30 shadow-[0_0_50px_rgba(37,99,235,0.1)]'}`}>
-               
-               {!passed ? (
-                 <AlertOctagon className="w-24 h-24 mx-auto mb-6 text-red-500" />
-               ) : (
-                 <Trophy className={`w-24 h-24 mx-auto mb-6 ${isAlreadyCompleted ? 'text-slate-500' : 'text-yellow-400'}`} />
-               )}
-
-               <h2 className="text-3xl font-black text-white mb-2">
-                 {isAlreadyCompleted ? 'Repaso Completado' : (perfectScore ? '¡Misión Superada!' : 'Reto Fallido')}
-               </h2>
-               
+            <div className={`bg-slate-900/80 border rounded-3xl p-10 text-center max-w-lg mx-auto ${!passed ? 'border-red-500/30' : 'border-blue-500/30'}`}>
+               <h2 className="text-3xl font-black text-white mb-2">{isAlreadyCompleted ? 'Repaso Listo' : (perfectScore ? '¡Misión Superada!' : 'Reto Fallido')}</h2>
                <p className="text-slate-400 mb-8">Acertaste {quizScore} de {lesson.quiz.length} preguntas.</p>
-               
-               {!isAlreadyCompleted && (
-                 <>
-                   {perfectScore ? (
-                     <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
-                        <p className="text-xs text-slate-500 font-bold uppercase mb-1">Recompensa Ganada</p>
-                        <p className="text-4xl font-black text-yellow-400">+{lesson.xpReward || 0} <span className="text-xl">XP</span></p>
-                     </div>
-                   ) : (
-                     <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/30 mb-8 inline-block max-w-sm">
-                        <p className="text-red-400 font-bold text-sm">Debes obtener un puntaje perfecto (5/5) para ganar la recompensa y desbloquear la siguiente misión.</p>
-                     </div>
-                   )}
-                 </>
-               )}
-               
                <div className="flex flex-col gap-4 w-full">
-                 {!passed ? (
-                   <>
-                     <button onClick={handleRetryQuiz} className="w-full py-4 rounded-xl font-black text-white bg-red-600 hover:bg-red-500 transition-all shadow-[0_0_30px_rgba(239,68,68,0.3)] flex justify-center items-center gap-2 text-lg">
-                       <RotateCcw className="w-5 h-5" /> Reintentar Reto
-                     </button>
-                     <button onClick={onBack} className="w-full py-4 rounded-xl font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                       Salir al Mapa
-                     </button>
-                   </>
-                 ) : (
-                   <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(lesson.xpReward || 0); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_0_30px_rgba(37,99,235,0.5)] flex justify-center items-center gap-2 text-lg">
-                     {isAlreadyCompleted ? 'Volver al Mapa' : 'Reclamar Recompensa'} <Star className="w-5 h-5 fill-current" />
-                   </button>
-                 )}
+                 {!passed ? <button onClick={handleRetryQuiz} className="w-full py-4 rounded-xl font-black text-white bg-red-600">Reintentar Reto</button> : <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(lesson.xpReward || 0); }} className="w-full py-4 rounded-xl font-black text-white bg-blue-600">Reclamar Recompensa</button>}
                </div>
             </div>
           )}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ----------------------------------------------------------------------
-// VISTA INMERSIVA: MINIJUEGO DE MEMORIA (ARCADE)
-// ----------------------------------------------------------------------
-function MemoryGameView({ game, onBack, onComplete, isAlreadyCompleted }) {
-  const [cards, setCards] = useState([]);
-  const [flippedIds, setFlippedIds] = useState([]);
-  const [matchedIds, setMatchedIds] = useState([]);
-  const [moves, setMoves] = useState(0);
-  const [isFinished, setIsFinished] = useState(false);
-
-  useEffect(() => {
-    const shuffled = [...game.data].sort(() => Math.random() - 0.5);
-    setCards(shuffled);
-  }, [game.data]);
-
-  const handleCardClick = (card) => {
-    if (flippedIds.length === 2 || flippedIds.includes(card.id) || matchedIds.includes(card.id)) return;
-    
-    playSound('click');
-    const newFlipped = [...flippedIds, card.id];
-    setFlippedIds(newFlipped);
-
-    if (newFlipped.length === 2) {
-      setMoves(m => m + 1);
-      const firstCard = cards.find(c => c.id === newFlipped[0]);
-      const secondCard = cards.find(c => c.id === newFlipped[1]);
-
-      if (firstCard.matchId === secondCard.id) {
-        playSound('success');
-        const newMatched = [...matchedIds, firstCard.id, secondCard.id];
-        setMatchedIds(newMatched);
-        setFlippedIds([]);
-        if (newMatched.length === cards.length) {
-           setTimeout(() => setIsFinished(true), 500);
-        }
-      } else {
-        playSound('error');
-        setTimeout(() => setFlippedIds([]), 1000);
-      }
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#050B14] text-slate-300 flex flex-col font-sans relative">
-      <header className="bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"><ArrowLeft className="w-5 h-5" /></button>
-          <div>
-            <p className="text-xs text-pink-400 font-bold uppercase tracking-wider">Laboratorio Arcade</p>
-            <h2 className="text-white font-bold">{game.title}</h2>
-          </div>
-        </div>
-        <div className="text-sm font-bold text-slate-400 bg-slate-900 px-4 py-2 rounded-xl border border-white/5">
-          Movimientos: <span className="text-white">{moves}</span>
-        </div>
-      </header>
-
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center justify-center">
-        {!isFinished ? (
-          <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4">
-            {cards.map(card => {
-              const isFlipped = flippedIds.includes(card.id) || matchedIds.includes(card.id);
-              const isMatched = matchedIds.includes(card.id);
-              
-              return (
-                <div 
-                  key={card.id} 
-                  onClick={() => handleCardClick(card)}
-                  className={`relative aspect-[4/3] rounded-2xl cursor-pointer perspective-1000 transition-all duration-300 ${isMatched ? 'opacity-50 scale-95' : 'hover:scale-105'}`}
-                >
-                  <div className={`w-full h-full absolute inset-0 preserve-3d transition-transform duration-500 ${isFlipped ? 'rotate-y-180' : ''}`}>
-                    <div className="absolute inset-0 backface-hidden bg-gradient-to-br from-pink-600 to-purple-800 rounded-2xl border-2 border-pink-400/30 flex items-center justify-center shadow-lg"><BrainCircuit className="w-12 h-12 text-white/50" /></div>
-                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-slate-800 rounded-2xl border-2 border-blue-500 flex items-center justify-center p-4 text-center shadow-[0_0_15px_rgba(37,99,235,0.3)]"><p className="text-sm font-bold text-white leading-tight">{card.text}</p></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="bg-slate-900/80 border border-pink-500/30 rounded-3xl p-10 text-center max-w-lg animate-in zoom-in duration-500">
-             <Gamepad2 className="w-24 h-24 text-pink-400 mx-auto mb-6" />
-             <h2 className="text-3xl font-black text-white mb-2">¡Nivel Completado!</h2>
-             <p className="text-slate-400 mb-8">Resolviste el puzzle en {moves} movimientos.</p>
-             {!isAlreadyCompleted ? (
-               <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 mb-8 inline-block">
-                  <p className="text-xs text-slate-500 font-bold uppercase mb-1">XP Extra Ganado</p>
-                  <p className="text-4xl font-black text-pink-400">+{game.xpReward} <span className="text-xl">XP</span></p>
-               </div>
-             ) : <p className="text-green-400 mb-8 font-bold">Modo práctica: Ya habías reclamado esta recompensa.</p>}
-             <button onClick={() => { if (isAlreadyCompleted) onBack(); else onComplete(game.xpReward); }} className="w-full py-4 rounded-xl font-black text-white bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 transition-all shadow-[0_0_30px_rgba(219,39,119,0.5)]">
-               {isAlreadyCompleted ? 'Volver al Laboratorio' : 'Reclamar XP Extra'}
-             </button>
-          </div>
-        )}
-      </div>
-      <style dangerouslySetInnerHTML={{__html: `.perspective-1000 { perspective: 1000px; } .preserve-3d { transform-style: preserve-3d; } .backface-hidden { backface-visibility: hidden; } .rotate-y-180 { transform: rotateY(180deg); }`}} />
     </div>
   );
 }
