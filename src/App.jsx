@@ -27,7 +27,6 @@ export default function App() {
       setIsCustomTeacherLogin(true);
       setCurrentScreen('dashboard');
       setLoadingAuth(false);
-      // Omitimos la autenticación anónima si ya hay un docente guardado localmente
       return; 
     }
 
@@ -53,6 +52,13 @@ export default function App() {
       }
 
       if (currentUser && !currentUser.isAnonymous) {
+        // --- EVITAR INGRESO AUTOMÁTICO SI EL CORREO NO ESTÁ VERIFICADO ---
+        if (!currentUser.emailVerified) {
+          setLoadingAuth(false);
+          return; 
+        }
+        // ------------------------------------------------------------------
+
         const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'usuarios', currentUser.uid);
         try {
           const snap = await getDoc(userRef);

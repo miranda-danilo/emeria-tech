@@ -98,7 +98,13 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
           createdAt: new Date().toISOString()
         });
 
-        await sendEmailVerification(userCredential.user);
+        try {
+          await sendEmailVerification(userCredential.user);
+        } catch (verifyErr) {
+          console.error("Error enviando verificación:", verifyErr);
+        }
+        
+        // Evita el auto-login de Firebase cerrando sesión inmediatamente
         await signOut(auth);
         
         setSuccessMsg('¡Registro exitoso! Verifica tu correo institucional antes de iniciar sesión.');
