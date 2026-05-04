@@ -138,14 +138,21 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
 
   const handleGoogleAuth = async () => {
     if (!isConfigured) return;
-    setError(''); 
-    setSuccessMsg(''); 
-    setLoading(true);
+    
+    // Importante: Inicializar el proveedor directamente sin hacer `setLoading(true)` u otros 
+    // cambios de estado ANTES del popup. Cambiar estados en React causa un re-renderizado
+    // que le hace creer al navegador que la ventana emergente no fue solicitada directamente por el clic.
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ hd: "unesum.edu.ec" });
     
     try { 
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ hd: "unesum.edu.ec" });
+      // Lanzamos la ventana emergente INMEDIATAMENTE
       const result = await signInWithPopup(auth, provider);
+      
+      // Una vez resuelto, actualizamos nuestros estados de carga y UI
+      setError(''); 
+      setSuccessMsg(''); 
+      setLoading(true);
       
       if (!validateUnesumEmail(result.user.email)) {
         await signOut(auth);
@@ -155,8 +162,11 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
       }
     } catch (err) { 
       console.error("Error detallado de Google Auth:", err); // Log para consola
-      if (err.code !== 'auth/popup-closed-by-user') {
-         // Mostrar el error real al usuario si no fue que cerró la ventana manualmente
+      
+      if (err.code === 'auth/popup-blocked') {
+        // Manejo específico del bloqueador de pop-ups
+        setError('Tu navegador bloqueó la ventana de Google. Por favor, permite las ventanas emergentes (pop-ups) en tu navegador e intenta de nuevo.');
+      } else if (err.code !== 'auth/popup-closed-by-user') {
          setError(`Error de Google: ${err.message}`); 
       }
       setLoading(false); 
