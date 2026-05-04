@@ -29,12 +29,12 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [course, setCourse] = useState('Octavo A');
-  const [showStudentPassword, setShowStudentPassword] = useState(false); // Estado para mostrar contraseña de estudiante
+  const [showStudentPassword, setShowStudentPassword] = useState(false); 
 
   // Estados de Docente
   const [teacherEmail, setTeacherEmail] = useState('');
   const [teacherCode, setTeacherCode] = useState('');
-  const [showTeacherPassword, setShowTeacherPassword] = useState(false); // Estado para mostrar código de docente
+  const [showTeacherPassword, setShowTeacherPassword] = useState(false); 
 
   // --------------------------------------------------------------------------
   // LÓGICA DE ESTUDIANTE
@@ -104,7 +104,6 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
           console.error("Error enviando verificación:", verifyErr);
         }
         
-        // Evita el auto-login de Firebase cerrando sesión inmediatamente
         await signOut(auth);
         
         setSuccessMsg('¡Registro exitoso! Verifica tu correo institucional antes de iniciar sesión.');
@@ -113,7 +112,6 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
       }
     } catch (err) { 
       console.error("Código de error de Firebase:", err.code); 
-      
       switch (err.code) {
         case 'auth/email-already-in-use':
           setError('Este correo institucional ya está registrado. Por favor, intenta iniciar sesión o recuperar tu contraseña.');
@@ -140,7 +138,10 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
 
   const handleGoogleAuth = async () => {
     if (!isConfigured) return;
-    setError(''); setSuccessMsg(''); setLoading(true);
+    setError(''); 
+    setSuccessMsg(''); 
+    setLoading(true);
+    
     try { 
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ hd: "unesum.edu.ec" });
@@ -153,8 +154,10 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
         return;
       }
     } catch (err) { 
+      console.error("Error detallado de Google Auth:", err); // Log para consola
       if (err.code !== 'auth/popup-closed-by-user') {
-         setError('Operación cancelada o error al conectar con Google.'); 
+         // Mostrar el error real al usuario si no fue que cerró la ventana manualmente
+         setError(`Error de Google: ${err.message}`); 
       }
       setLoading(false); 
     }
@@ -186,7 +189,7 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
       );
 
       if (teacher) {
-        onTeacherLogin(teacher); // Callback para App.jsx
+        onTeacherLogin(teacher);
       } else {
         setError("Correo o código de acceso incorrectos.");
         setLoading(false);
@@ -200,7 +203,6 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
 
   return (
     <div className="min-h-screen bg-[#050B14] flex flex-col justify-center items-center p-4 relative overflow-hidden text-slate-300">
-      {/* Elementos decorativos de fondo */}
       <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       
       <button onClick={onBack} className="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-white z-20 transition-colors">
@@ -209,7 +211,6 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
       
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-2xl relative z-10">
         
-        {/* Cabecera Logo */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.5)] mb-4">
             <Cpu className="text-white w-8 h-8" />
@@ -218,7 +219,6 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
           <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">Plataforma Exclusiva UNESUM</p>
         </div>
 
-        {/* TABS (Selector de Perfil) */}
         <div className="flex bg-slate-950/50 p-1 rounded-xl mb-6 border border-white/10">
           <button 
             onClick={() => { setLoginType('student'); setError(''); setSuccessMsg(''); }}
@@ -234,13 +234,9 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
           </button>
         </div>
 
-        {/* Mensajes Globales de Error / Éxito */}
         {error && <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm text-center font-medium animate-in fade-in">{error}</div>}
         {successMsg && <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-xl text-green-400 text-sm text-center font-medium animate-in fade-in">{successMsg}</div>}
 
-        {/* =====================================================================
-            VISTA ESTUDIANTE
-            ===================================================================== */}
         {loginType === 'student' && (
           <div className="animate-in fade-in slide-in-from-left-4 duration-300">
             {isForgotPassword ? (
