@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, BookOpen, Edit3, Save, Users, LayoutDashboard, BarChart3, Upload, FileText, CheckCircle, Cpu, Zap, Search, Plus, Trash2, ArrowLeft, List, Type, Video, MessageSquare, AlertTriangle, Star, Target, Filter, Clock, CircleDashed, Gamepad2, PlayCircle, Lock, BrainCircuit } from 'lucide-react';
+import { LogOut, BookOpen, Edit3, Save, Users, LayoutDashboard, BarChart3, FileText, CheckCircle, Cpu, Zap, Search, Plus, Trash2, ArrowLeft, List, Type, Video, MessageSquare, AlertTriangle, Star, Target, Filter, CircleDashed, Gamepad2, PlayCircle, Lock, BrainCircuit, KeyRound, X, Loader2 } from 'lucide-react';
 import { db, appId } from '../firebase/config';
 import { collection, query, onSnapshot, doc, updateDoc, setDoc, orderBy } from 'firebase/firestore';
 import { silabo as silaboInicial, arcadeGames as juegosIniciales } from '../data/silabo'; 
@@ -17,10 +17,10 @@ const getYouTubeId = (url) => {
 export default function TeacherDashboard({ profile, onLogout }) {
   const [activeTab, setActiveTab] = useState('inicio');
   const [silaboData, setSilaboData] = useState([]);
-  const [juegosData, setJuegosData] = useState([]); // Base de datos de juegos
+  const [juegosData, setJuegosData] = useState([]); 
   const [studentsData, setStudentsData] = useState([]);
   const [editingUnitId, setEditingUnitId] = useState(null);
-  const [editingGameId, setEditingGameId] = useState(null); // Juego en edición
+  const [editingGameId, setEditingGameId] = useState(null); 
   const [loading, setLoading] = useState(true);
   
   // ESTADOS PARA CALIFICACIONES
@@ -28,9 +28,16 @@ export default function TeacherDashboard({ profile, onLogout }) {
   const [selectedCourseFilter, setSelectedCourseFilter] = useState('Todos');
   const [selectedStudentDetail, setSelectedStudentDetail] = useState(null);
   
-  // ESTADOS PARA VISTAS PREVIAS (LECCIONES O JUEGOS)
+  // ESTADOS PARA VISTAS PREVIAS
   const [previewLesson, setPreviewLesson] = useState(null);
   const [previewGame, setPreviewGame] = useState(null);
+
+  // ESTADOS PARA CAMBIAR CÓDIGO
+  const [isChangingCode, setIsChangingCode] = useState(false);
+  const [newCode, setNewCode] = useState('');
+  const [confirmCode, setConfirmCode] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [isSavingCode, setIsSavingCode] = useState(false);
 
   useEffect(() => {
     // Suscripción Sílabo
@@ -69,12 +76,10 @@ export default function TeacherDashboard({ profile, onLogout }) {
   const initializeSilaboInFirestore = async () => {
     setLoading(true);
     try {
-      // Inicializar misiones
       for (const unidad of silaboInicial) {
         const unitRef = doc(db, 'artifacts', appId, 'public', 'data', 'silabo', unidad.id);
         await setDoc(unitRef, unidad);
       }
-      // Inicializar juegos
       for (const juego of juegosIniciales) {
         const juegoRef = doc(db, 'artifacts', appId, 'public', 'data', 'juegos', juego.id);
         await setDoc(juegoRef, juego);
@@ -109,7 +114,39 @@ export default function TeacherDashboard({ profile, onLogout }) {
     }
   };
 
-  // Obtener lista plana de misiones (útil para el selector de desbloqueo de juegos)
+  const handleChangeCode = async (e) => {
+    e.preventDefault();
+    setCodeError('');
+    if (newCode !== confirmCode) {
+      setCodeError("Los códigos no coinciden. Intenta nuevamente.");
+      return;
+    }
+    if (newCode.length < 6) {
+      setCodeError("El nuevo código debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    setIsSavingCode(true);
+    try {
+      // Usar profile.id para actualizar el documento en Firestore
+      const userRef = doc(db, 'artifacts', appId, 'public', 'data', 'usuarios', profile.id);
+      await updateDoc(userRef, { code_login: newCode });
+      
+      // Actualizar localStorage para que la sesión persista correctamente
+      const updatedProfile = { ...profile, code_login: newCode };
+      localStorage.setItem('teacherProfile_emeria', JSON.stringify(updatedProfile));
+      
+      setIsChangingCode(false);
+      setNewCode('');
+      setConfirmCode('');
+      alert("Tu código de acceso se ha actualizado con éxito.");
+    } catch (error) {
+      console.error("Error al cambiar código:", error);
+      setCodeError("Hubo un error al guardar el nuevo código.");
+    }
+    setIsSavingCode(false);
+  };
+
   const getFlatLessons = () => {
     let allLessons = [];
     silaboData.forEach(u => {
@@ -135,10 +172,8 @@ export default function TeacherDashboard({ profile, onLogout }) {
 
   if (loading) return <div className="min-h-screen bg-[#050B14] flex items-center justify-center text-white"><Cpu className="w-12 h-12 animate-spin text-blue-500" /></div>;
 
-  // MODOS DE VISTA PREVIA
-  if (previewLesson) {
-    return <TeacherLessonPreview lesson={previewLesson} onClose={() => setPreviewLesson(null)} />;
-  }
+  if (previewLesson) return <TeacherLessonPreview lesson={previewLesson} onClose={() => setPreviewLesson(null)} />;
+  
   if (previewGame) {
     return (
       <div className="fixed inset-0 z-[100] bg-[#050B14] flex flex-col font-sans h-screen overflow-hidden">
@@ -155,7 +190,7 @@ export default function TeacherDashboard({ profile, onLogout }) {
           <h2 className="text-white font-bold text-lg truncate max-w-xl">{previewGame.title}</h2>
         </header>
         <div className="flex-1 overflow-y-auto relative bg-[#0a1120]">
-           <GameRenderer game={previewGame} onBack={() => setPreviewGame(null)} isPreviewMode={true} />
+           <GameRenderer game={previewGame} onBack={() => setPreviewGame(null)} />
         </div>
       </div>
     );
@@ -164,6 +199,44 @@ export default function TeacherDashboard({ profile, onLogout }) {
   return (
     <div className="min-h-screen bg-[#050B14] text-slate-300 flex overflow-hidden font-sans">
       
+      {/* MODAL CAMBIAR CÓDIGO */}
+      {isChangingCode && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-white/10 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2"><KeyRound className="w-5 h-5 text-amber-500" /> Cambiar Código</h3>
+              <button onClick={() => setIsChangingCode(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+            </div>
+            {codeError && <p className="text-xs text-red-400 bg-red-500/10 p-3 rounded-lg mb-4 border border-red-500/20">{codeError}</p>}
+            <form onSubmit={handleChangeCode} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nuevo Código</label>
+                <input 
+                  type="password" 
+                  value={newCode} 
+                  onChange={(e) => setNewCode(e.target.value)} 
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-amber-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Confirmar Código</label>
+                <input 
+                  type="password" 
+                  value={confirmCode} 
+                  onChange={(e) => setConfirmCode(e.target.value)} 
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-amber-500"
+                  required
+                />
+              </div>
+              <button type="submit" disabled={isSavingCode} className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all">
+                {isSavingCode ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Guardar Nuevo Código'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <aside className="w-64 bg-slate-900/50 border-r border-white/5 flex flex-col justify-between hidden md:flex backdrop-blur-md">
         <div>
           <div className="p-6 border-b border-white/5 flex items-center gap-3">
@@ -178,8 +251,8 @@ export default function TeacherDashboard({ profile, onLogout }) {
           
           <nav className="p-4 space-y-2">
             <SidebarBtn icon={<LayoutDashboard/>} label="Dashboard" isActive={activeTab==='inicio'} onClick={()=>{setActiveTab('inicio'); setSelectedStudentDetail(null);}} />
-            <SidebarBtn icon={<BookOpen/>} label="Unidades" isActive={activeTab==='silabo'} onClick={()=>{setActiveTab('silabo'); setSelectedStudentDetail(null);}} />
-            <SidebarBtn icon={<Gamepad2/>} label="Laboratorio" isActive={activeTab==='laboratorio'} onClick={()=>{setActiveTab('laboratorio'); setSelectedStudentDetail(null);}} />
+            <SidebarBtn icon={<BookOpen/>} label="Unidades (Teoría)" isActive={activeTab==='silabo'} onClick={()=>{setActiveTab('silabo'); setSelectedStudentDetail(null);}} />
+            <SidebarBtn icon={<Gamepad2/>} label="Laboratorio (Juegos)" isActive={activeTab==='laboratorio'} onClick={()=>{setActiveTab('laboratorio'); setSelectedStudentDetail(null);}} />
             <SidebarBtn icon={<BarChart3/>} label="Calificaciones" isActive={activeTab==='calificaciones'} onClick={()=>setActiveTab('calificaciones')} />
           </nav>
         </div>
@@ -189,6 +262,12 @@ export default function TeacherDashboard({ profile, onLogout }) {
               <p className="text-white font-bold text-sm truncate">{profile?.name || 'Profesor'}</p>
               <p className="text-xs text-amber-400 font-bold mt-1">Administrador</p>
            </div>
+           
+          {/* BOTÓN CAMBIAR CÓDIGO */}
+          <button onClick={() => { setIsChangingCode(true); setCodeError(''); setNewCode(''); setConfirmCode(''); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-300 hover:text-white transition-colors font-medium mb-1">
+            <KeyRound className="w-5 h-5 text-amber-500" /> Cambiar Código
+          </button>
+
           <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-colors font-medium">
             <LogOut className="w-5 h-5" /> Cerrar Sesión
           </button>
@@ -203,7 +282,10 @@ export default function TeacherDashboard({ profile, onLogout }) {
            <div className="hidden md:block">
              <h2 className="text-xl font-bold text-white capitalize">{activeTab.replace('-', ' ')}</h2>
            </div>
-           <button onClick={onLogout} className="md:hidden text-slate-400 hover:text-white"><LogOut className="w-6 h-6"/></button>
+           <div className="flex items-center gap-2">
+             <button onClick={() => setIsChangingCode(true)} className="md:hidden text-amber-500 p-2"><KeyRound className="w-5 h-5"/></button>
+             <button onClick={onLogout} className="md:hidden text-slate-400 hover:text-white p-2"><LogOut className="w-6 h-6"/></button>
+           </div>
         </header>
 
         <div className="p-4 md:p-8 max-w-6xl mx-auto w-full">
@@ -338,7 +420,7 @@ export default function TeacherDashboard({ profile, onLogout }) {
             </div>
           )}
 
-          {/* LABORATORIO (EDICIÓN SIMPLIFICADA DE JUEGOS) */}
+          {/* LABORATORIO */}
           {activeTab === 'laboratorio' && (
              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900/50 p-6 rounded-2xl border border-white/5 gap-4">
@@ -403,7 +485,6 @@ export default function TeacherDashboard({ profile, onLogout }) {
           {/* CALIFICACIONES */}
           {activeTab === 'calificaciones' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-              
               {!selectedStudentDetail ? (
                 <div className="bg-slate-900/50 border border-white/5 rounded-3xl overflow-hidden shadow-xl">
                   <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900">
@@ -458,19 +539,13 @@ export default function TeacherDashboard({ profile, onLogout }) {
                             return matchesSearch && matchesCourse;
                           })
                           .map((student) => {
-                            // Separar misiones vs juegos
                             const completedMissionsCount = student.completedMissions?.filter(id => flatLessonsList.find(l => l.id === id))?.length || 0;
                             const completedGamesCount = student.completedMissions?.filter(id => juegosData.find(g => g.id === id))?.length || 0;
-                            
                             const progressLessons = totalLessonsInSilabo > 0 ? (completedMissionsCount / totalLessonsInSilabo) * 100 : 0;
                             const progressGames = totalGamesInDb > 0 ? (completedGamesCount / totalGamesInDb) * 100 : 0;
 
                           return (
-                            <tr 
-                              key={student.id} 
-                              onClick={() => setSelectedStudentDetail(student)}
-                              className="hover:bg-slate-800/80 transition-colors cursor-pointer group"
-                            >
+                            <tr key={student.id} onClick={() => setSelectedStudentDetail(student)} className="hover:bg-slate-800/80 transition-colors cursor-pointer group">
                               <td className="p-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-8 h-8 rounded-full bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-xs border border-blue-500/30 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -482,13 +557,8 @@ export default function TeacherDashboard({ profile, onLogout }) {
                                   </div>
                                 </div>
                               </td>
-                              <td className="p-4 hidden sm:table-cell">
-                                <span className="text-xs text-slate-400 font-medium">{student.course || 'Sin asignar'}</span>
-                              </td>
-                              <td className="p-4 text-center">
-                                <span className="font-mono text-yellow-400 font-bold group-hover:scale-110 inline-block transition-transform">{student.totalScore || 0} XP</span>
-                              </td>
-                              {/* Barra Teoría */}
+                              <td className="p-4 hidden sm:table-cell"><span className="text-xs text-slate-400 font-medium">{student.course || 'Sin asignar'}</span></td>
+                              <td className="p-4 text-center"><span className="font-mono text-yellow-400 font-bold group-hover:scale-110 inline-block transition-transform">{student.totalScore || 0} XP</span></td>
                               <td className="p-4 border-l border-white/5">
                                  <div className="flex flex-col items-center justify-center">
                                    <div className="w-full max-w-[100px] bg-slate-950 rounded-full h-2 mb-1 overflow-hidden">
@@ -497,7 +567,6 @@ export default function TeacherDashboard({ profile, onLogout }) {
                                    <span className="text-[10px] text-slate-400 font-bold">{completedMissionsCount}/{totalLessonsInSilabo}</span>
                                  </div>
                               </td>
-                              {/* Barra Juegos */}
                               <td className="p-4 border-l border-white/5">
                                  <div className="flex flex-col items-center justify-center">
                                    <div className="w-full max-w-[100px] bg-slate-950 rounded-full h-2 mb-1 overflow-hidden">
@@ -517,7 +586,6 @@ export default function TeacherDashboard({ profile, onLogout }) {
                   </div>
                 </div>
               ) : (
-                /* DETALLE DEL ESTUDIANTE SELECCIONADO */
                 <div className="bg-slate-900/80 border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-white/5 pb-6">
                     <div className="flex items-center gap-4">
@@ -538,7 +606,6 @@ export default function TeacherDashboard({ profile, onLogout }) {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* COLUMNA TEORÍA */}
                     <div>
                       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><BookOpen className="w-5 h-5 text-blue-400"/> Historial de Misiones</h3>
                       <div className="space-y-6">
@@ -567,7 +634,6 @@ export default function TeacherDashboard({ profile, onLogout }) {
                       </div>
                     </div>
 
-                    {/* COLUMNA LABORATORIO */}
                     <div>
                       <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><Gamepad2 className="w-5 h-5 text-pink-400"/> Historial de Laboratorio</h3>
                       <div className="space-y-3">
@@ -601,7 +667,7 @@ export default function TeacherDashboard({ profile, onLogout }) {
 }
 
 // ----------------------------------------------------------------------
-// SUBCOMPONENTE: EDITOR DE UNIDAD (TEORÍA)
+// SUBCOMPONENTE: EDITOR DE UNIDAD
 // ----------------------------------------------------------------------
 function EditUnitForm({ unit, onSave, onCancel }) {
   const [formData, setFormData] = useState(JSON.parse(JSON.stringify(unit)));
@@ -629,13 +695,7 @@ function EditUnitForm({ unit, onSave, onCancel }) {
   if (editingLessonContent) {
     const { sIndex, lIndex } = editingLessonContent;
     const lesson = formData.sessions[sIndex].lessons[lIndex];
-    return (
-      <LessonContentEditor 
-        lesson={lesson} 
-        onSave={(updated) => saveLessonContent(sIndex, lIndex, updated)} 
-        onCancel={() => setEditingLessonContent(null)} 
-      />
-    );
+    return <LessonContentEditor lesson={lesson} onSave={(updated) => saveLessonContent(sIndex, lIndex, updated)} onCancel={() => setEditingLessonContent(null)} />;
   }
 
   return (
@@ -699,8 +759,6 @@ function EditGameForm({ game, flatLessons, onSave, onCancel }) {
   const [formData, setFormData] = useState({ ...game });
 
   const handleSave = () => {
-     // Conservamos todas las propiedades originales del juego (como las preguntas, pares, etc.)
-     // y solo actualizamos la información básica configurada en este formulario.
      const finalData = {
        ...formData,
        xpReward: parseInt(formData.xpReward) || 0,
@@ -757,7 +815,7 @@ function EditGameForm({ game, flatLessons, onSave, onCancel }) {
 }
 
 // ----------------------------------------------------------------------
-// RESTO DE SUBCOMPONENTES (EDITOR DE LECCIÓN Y VISTA PREVIA DE LECCIÓN)
+// RESTO DE SUBCOMPONENTES (EDITOR DE LECCIÓN Y VISTA PREVIA)
 // ----------------------------------------------------------------------
 function LessonContentEditor({ lesson, onSave, onCancel }) {
   const [localLesson, setLocalLesson] = useState(() => {
@@ -954,7 +1012,6 @@ function TeacherLessonPreview({ lesson, onClose }) {
   );
 }
 
-// Wrapper para proyectar juegos de arcade desde el panel docente
 function GameRenderer({ game, onBack }) {
     const gameProps = { game, onBack, onComplete: () => {}, isAlreadyCompleted: false, isPreviewMode: true };
     switch (game.type) {
@@ -968,9 +1025,6 @@ function GameRenderer({ game, onBack }) {
     }
 }
 
-// ----------------------------------------------------------------------
-// SUBCOMPONENTES UI REUTILIZABLES
-// ----------------------------------------------------------------------
 function SidebarBtn({ icon, label, isActive, onClick }) {
   return (
     <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' : 'hover:bg-white/5 text-slate-400 hover:text-white'}`}>
