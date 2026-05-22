@@ -41,7 +41,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="hidden lg:block absolute top-40 left-20 animate-float rotate-y-12 transform-3d z-0">
           <div className="w-32 h-32 bg-slate-200 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl p-4" style={{ animation: 'pulse-glow 4s infinite' }}>
             <img 
-              src="src/assets/logo_carrera_ti.png" 
+              src="assets/logo_carrera_ti.png" 
               alt="Logo Tecnologías de la Información" 
               className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             />
@@ -55,7 +55,7 @@ export default function LandingPage({ onNavigateToAuth }) {
         <div className="hidden lg:block absolute bottom-20 right-20 animate-float-delayed rotate-y-minus-12 transform-3d z-0">
           <div className="w-40 h-40 bg-slate-200 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl p-5" style={{ animation: 'pulse-glow 5s infinite 1s' }}>
             <img 
-              src="src/assets/logo_unesum.png" 
+              src="assets/logo_unesum.png" 
               alt="Logo UNESUM" 
               className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
             />
@@ -96,7 +96,7 @@ export default function LandingPage({ onNavigateToAuth }) {
               className="w-full h-auto aspect-video object-cover opacity-90 group-hover:opacity-100 transition-opacity"
               poster="https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop"
             >
-              <source src="src/assets/video_promo.mp4" type="video/mp4" />
+              <source src="assets/video_promo.mp4" type="video/mp4" />
               Tu navegador no soporta videos HTML5.
             </video>
             
