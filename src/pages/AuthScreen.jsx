@@ -224,7 +224,7 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
         <div className="flex flex-col items-center mb-6">
             <div className="w-22 h-22 bg-slate-200 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)] mb-4 p-2">
             <img 
-              src="src/assets/logo_carrera_ti.png" 
+              src="/assets/logo_carrera_ti.png" 
               alt="Logo Carrera" 
               className="w-full h-full object-contain drop-shadow-md"
             />
