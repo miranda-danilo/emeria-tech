@@ -1,10 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Cpu, BrainCircuit, Globe, GraduationCap, ChevronRight, PlayCircle, Lightbulb, Rocket, Award, Send } from 'lucide-react';
-import videoPromo from '../assets/video_promo.mp4';
-
+// import videoPromo from '../assets/video_promo.mp4';
 
 export default function LandingPage({ onNavigateToAuth }) {
-  // ... pega todo el contenido de la función LandingPage aquí ...
   
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [formStatus, setFormStatus] = useState('');
@@ -21,7 +19,6 @@ export default function LandingPage({ onNavigateToAuth }) {
 
   return (
     <div className="min-h-screen bg-[#050B14] text-slate-300 font-sans overflow-x-hidden selection:bg-blue-500/30">
-      
       
       {/* Navbar */}
       <nav className="fixed w-full z-50 bg-[#050B14]/80 backdrop-blur-md border-b border-white/5">
@@ -40,14 +37,28 @@ export default function LandingPage({ onNavigateToAuth }) {
       <section className="relative pt-40 pb-10 px-6 lg:pt-48 lg:pb-20 overflow-hidden perspective-1000">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
         
+        {/* LOGO DE LA CARRERA (Flotante Izquierda) */}
         <div className="hidden lg:block absolute top-40 left-20 animate-float rotate-y-12 transform-3d z-0">
-          <div className="w-32 h-32 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl" style={{ animation: 'pulse-glow 4s infinite' }}>
-            <BrainCircuit className="w-16 h-16 text-indigo-400" />
+          <div className="w-32 h-32 bg-slate-200 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center shadow-2xl p-4" style={{ animation: 'pulse-glow 4s infinite' }}>
+            <img 
+              src="src/assets/logo_carrera_ti.png" 
+              alt="Logo Tecnologías de la Información" 
+              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            />
           </div>
         </div>
+
+
+        
+
+        {/* LOGO DE LA UNESUM (Flotante Derecha) */}
         <div className="hidden lg:block absolute bottom-20 right-20 animate-float-delayed rotate-y-minus-12 transform-3d z-0">
-          <div className="w-40 h-40 bg-white/5 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl" style={{ animation: 'pulse-glow 5s infinite 1s' }}>
-            <Globe className="w-20 h-20 text-blue-400" />
+          <div className="w-40 h-40 bg-slate-200 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-center shadow-2xl p-5" style={{ animation: 'pulse-glow 5s infinite 1s' }}>
+            <img 
+              src="src/assets/logo_unesum.png" 
+              alt="Logo UNESUM" 
+              className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+            />
           </div>
         </div>
 
@@ -180,5 +191,4 @@ export default function LandingPage({ onNavigateToAuth }) {
       </div>
     </div>
   );
-
 }

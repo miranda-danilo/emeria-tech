@@ -222,11 +222,15 @@ export default function AuthScreen({ onBack, onTeacherLogin }) {
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-2xl relative z-10">
         
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.5)] mb-4">
-            <Cpu className="text-white w-8 h-8" />
+            <div className="w-22 h-22 bg-slate-200 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)] mb-4 p-2">
+            <img 
+              src="src/assets/logo_carrera_ti.png" 
+              alt="Logo Carrera" 
+              className="w-full h-full object-contain drop-shadow-md"
+            />
           </div>
           <h1 className="text-3xl font-black text-white">EMERIA TECH</h1>
-          <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">Plataforma Exclusiva UNESUM</p>
+          <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest">Aplicación Web Exclusiva UNESUM</p>
         </div>
 
         <div className="flex bg-slate-950/50 p-1 rounded-xl mb-6 border border-white/10">
