@@ -718,7 +718,7 @@ export const arcadeGames = [
       { question: "¿Problema donde no sabemos cómo la IA decide?", correct: "Caja Negra", options: ["Caja Negra", "Pantalla Azul", "Ping Alto", "Hardware"] },
       { question: "¿Procesamiento de datos cerca del usuario?", correct: "Edge Computing", options: ["Cloud Computing", "Edge Computing", "Mainframe", "Router"] },
       { question: "¿Tecnología de Bitcoin?", correct: "Blockchain", options: ["Blockchain", "VR", "Machine Learning", "Cloud"] },
-      { question: "¿Dispositivos físicos conectados a internet?", correct: "IoT", options: ["Internet Oscuro", "Internet de las Cosas (IoT)", "Intranet", "Cables LAN"] }
+      { question: "¿Dispositivos físicos conectados a internet?", correct: "Internet de las Cosas (IoT)", options: ["Internet Oscuro", "Internet de las Cosas (IoT)", "Intranet", "Cables LAN"] }
     ]
   },
   {
